@@ -83,7 +83,7 @@ const avatars = [
   "https://api.dicebear.com/7.x/avataaars/svg?seed=Chamara",
 ];
 
-const studentNames = [
+export const studentNames = [
   "Aisha Fernando",
   "Kavindu Perera",
   "Priya Ratnayake",

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { StatCard } from "@/components/stat-card";
 import { CheckCircle2, Coins, Users, TrendingUp } from "lucide-react";
@@ -69,20 +69,19 @@ function UniHome() {
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-6">
-          <h3 className="mb-4 font-display font-semibold">Recent projects awaiting review</h3>
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-display font-semibold">Recent projects awaiting review</h3>
+            <Link to="/dashboard/university/projects" className="text-xs font-semibold text-teal hover:underline">Open review queue →</Link>
+          </div>
           <div className="divide-y divide-border">
             {projects.slice(0, 4).map((p) => (
-              <div key={p.id} className="flex items-center gap-4 py-3">
+              <Link key={p.id} to="/dashboard/university/projects" className="flex items-center gap-4 py-3 hover:bg-muted/40 rounded-lg px-2 -mx-2">
                 <img src={p.cover} alt="" className="h-14 w-20 rounded-lg object-cover" />
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-semibold">{p.title}</div>
                   <div className="text-xs text-muted-foreground">{p.student.name} · {p.student.department}</div>
                 </div>
-                <div className="flex gap-2">
-                  <button className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted">Reject</button>
-                  <button className="rounded-md bg-teal-gradient px-3 py-1.5 text-xs font-semibold text-navy-deep">Approve</button>
-                </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

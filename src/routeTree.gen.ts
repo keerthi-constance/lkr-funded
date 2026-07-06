@@ -22,7 +22,22 @@ import { Route as DashboardUniversityIndexRouteImport } from './routes/dashboard
 import { Route as DashboardStudentIndexRouteImport } from './routes/dashboard.student.index'
 import { Route as DashboardDonorIndexRouteImport } from './routes/dashboard.donor.index'
 import { Route as DashboardAdminIndexRouteImport } from './routes/dashboard.admin.index'
+import { Route as DashboardUniversityStudentsRouteImport } from './routes/dashboard.university.students'
+import { Route as DashboardUniversityProjectsRouteImport } from './routes/dashboard.university.projects'
+import { Route as DashboardUniversityMilestonesRouteImport } from './routes/dashboard.university.milestones'
+import { Route as DashboardUniversityAnalyticsRouteImport } from './routes/dashboard.university.analytics'
+import { Route as DashboardStudentWalletRouteImport } from './routes/dashboard.student.wallet'
+import { Route as DashboardStudentUpdatesRouteImport } from './routes/dashboard.student.updates'
 import { Route as DashboardStudentSubmitRouteImport } from './routes/dashboard.student.submit'
+import { Route as DashboardStudentMilestonesRouteImport } from './routes/dashboard.student.milestones'
+import { Route as DashboardDonorWatchlistRouteImport } from './routes/dashboard.donor.watchlist'
+import { Route as DashboardDonorProfileRouteImport } from './routes/dashboard.donor.profile'
+import { Route as DashboardDonorDonationsRouteImport } from './routes/dashboard.donor.donations'
+import { Route as DashboardAdminSettingsRouteImport } from './routes/dashboard.admin.settings'
+import { Route as DashboardAdminReleasesRouteImport } from './routes/dashboard.admin.releases'
+import { Route as DashboardAdminLedgerRouteImport } from './routes/dashboard.admin.ledger'
+import { Route as DashboardAdminDisputesRouteImport } from './routes/dashboard.admin.disputes'
+import { Route as DashboardAdminApprovalsRouteImport } from './routes/dashboard.admin.approvals'
 
 const TransparencyRoute = TransparencyRouteImport.update({
   id: '/transparency',
@@ -90,9 +105,89 @@ const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardUniversityStudentsRoute =
+  DashboardUniversityStudentsRouteImport.update({
+    id: '/university/students',
+    path: '/university/students',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardUniversityProjectsRoute =
+  DashboardUniversityProjectsRouteImport.update({
+    id: '/university/projects',
+    path: '/university/projects',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardUniversityMilestonesRoute =
+  DashboardUniversityMilestonesRouteImport.update({
+    id: '/university/milestones',
+    path: '/university/milestones',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardUniversityAnalyticsRoute =
+  DashboardUniversityAnalyticsRouteImport.update({
+    id: '/university/analytics',
+    path: '/university/analytics',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardStudentWalletRoute = DashboardStudentWalletRouteImport.update({
+  id: '/student/wallet',
+  path: '/student/wallet',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardStudentUpdatesRoute = DashboardStudentUpdatesRouteImport.update({
+  id: '/student/updates',
+  path: '/student/updates',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardStudentSubmitRoute = DashboardStudentSubmitRouteImport.update({
   id: '/student/submit',
   path: '/student/submit',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardStudentMilestonesRoute =
+  DashboardStudentMilestonesRouteImport.update({
+    id: '/student/milestones',
+    path: '/student/milestones',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardDonorWatchlistRoute = DashboardDonorWatchlistRouteImport.update({
+  id: '/donor/watchlist',
+  path: '/donor/watchlist',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardDonorProfileRoute = DashboardDonorProfileRouteImport.update({
+  id: '/donor/profile',
+  path: '/donor/profile',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardDonorDonationsRoute = DashboardDonorDonationsRouteImport.update({
+  id: '/donor/donations',
+  path: '/donor/donations',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminSettingsRoute = DashboardAdminSettingsRouteImport.update({
+  id: '/admin/settings',
+  path: '/admin/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminReleasesRoute = DashboardAdminReleasesRouteImport.update({
+  id: '/admin/releases',
+  path: '/admin/releases',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminLedgerRoute = DashboardAdminLedgerRouteImport.update({
+  id: '/admin/ledger',
+  path: '/admin/ledger',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminDisputesRoute = DashboardAdminDisputesRouteImport.update({
+  id: '/admin/disputes',
+  path: '/admin/disputes',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminApprovalsRoute = DashboardAdminApprovalsRouteImport.update({
+  id: '/admin/approvals',
+  path: '/admin/approvals',
   getParentRoute: () => DashboardRoute,
 } as any)
 
@@ -106,7 +201,22 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/project/$slug': typeof ProjectSlugRoute
+  '/dashboard/admin/approvals': typeof DashboardAdminApprovalsRoute
+  '/dashboard/admin/disputes': typeof DashboardAdminDisputesRoute
+  '/dashboard/admin/ledger': typeof DashboardAdminLedgerRoute
+  '/dashboard/admin/releases': typeof DashboardAdminReleasesRoute
+  '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
+  '/dashboard/donor/donations': typeof DashboardDonorDonationsRoute
+  '/dashboard/donor/profile': typeof DashboardDonorProfileRoute
+  '/dashboard/donor/watchlist': typeof DashboardDonorWatchlistRoute
+  '/dashboard/student/milestones': typeof DashboardStudentMilestonesRoute
   '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
+  '/dashboard/student/updates': typeof DashboardStudentUpdatesRoute
+  '/dashboard/student/wallet': typeof DashboardStudentWalletRoute
+  '/dashboard/university/analytics': typeof DashboardUniversityAnalyticsRoute
+  '/dashboard/university/milestones': typeof DashboardUniversityMilestonesRoute
+  '/dashboard/university/projects': typeof DashboardUniversityProjectsRoute
+  '/dashboard/university/students': typeof DashboardUniversityStudentsRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
   '/dashboard/donor/': typeof DashboardDonorIndexRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
@@ -122,7 +232,22 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/project/$slug': typeof ProjectSlugRoute
+  '/dashboard/admin/approvals': typeof DashboardAdminApprovalsRoute
+  '/dashboard/admin/disputes': typeof DashboardAdminDisputesRoute
+  '/dashboard/admin/ledger': typeof DashboardAdminLedgerRoute
+  '/dashboard/admin/releases': typeof DashboardAdminReleasesRoute
+  '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
+  '/dashboard/donor/donations': typeof DashboardDonorDonationsRoute
+  '/dashboard/donor/profile': typeof DashboardDonorProfileRoute
+  '/dashboard/donor/watchlist': typeof DashboardDonorWatchlistRoute
+  '/dashboard/student/milestones': typeof DashboardStudentMilestonesRoute
   '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
+  '/dashboard/student/updates': typeof DashboardStudentUpdatesRoute
+  '/dashboard/student/wallet': typeof DashboardStudentWalletRoute
+  '/dashboard/university/analytics': typeof DashboardUniversityAnalyticsRoute
+  '/dashboard/university/milestones': typeof DashboardUniversityMilestonesRoute
+  '/dashboard/university/projects': typeof DashboardUniversityProjectsRoute
+  '/dashboard/university/students': typeof DashboardUniversityStudentsRoute
   '/dashboard/admin': typeof DashboardAdminIndexRoute
   '/dashboard/donor': typeof DashboardDonorIndexRoute
   '/dashboard/student': typeof DashboardStudentIndexRoute
@@ -139,7 +264,22 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/project/$slug': typeof ProjectSlugRoute
+  '/dashboard/admin/approvals': typeof DashboardAdminApprovalsRoute
+  '/dashboard/admin/disputes': typeof DashboardAdminDisputesRoute
+  '/dashboard/admin/ledger': typeof DashboardAdminLedgerRoute
+  '/dashboard/admin/releases': typeof DashboardAdminReleasesRoute
+  '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
+  '/dashboard/donor/donations': typeof DashboardDonorDonationsRoute
+  '/dashboard/donor/profile': typeof DashboardDonorProfileRoute
+  '/dashboard/donor/watchlist': typeof DashboardDonorWatchlistRoute
+  '/dashboard/student/milestones': typeof DashboardStudentMilestonesRoute
   '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
+  '/dashboard/student/updates': typeof DashboardStudentUpdatesRoute
+  '/dashboard/student/wallet': typeof DashboardStudentWalletRoute
+  '/dashboard/university/analytics': typeof DashboardUniversityAnalyticsRoute
+  '/dashboard/university/milestones': typeof DashboardUniversityMilestonesRoute
+  '/dashboard/university/projects': typeof DashboardUniversityProjectsRoute
+  '/dashboard/university/students': typeof DashboardUniversityStudentsRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
   '/dashboard/donor/': typeof DashboardDonorIndexRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
@@ -157,7 +297,22 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/project/$slug'
+    | '/dashboard/admin/approvals'
+    | '/dashboard/admin/disputes'
+    | '/dashboard/admin/ledger'
+    | '/dashboard/admin/releases'
+    | '/dashboard/admin/settings'
+    | '/dashboard/donor/donations'
+    | '/dashboard/donor/profile'
+    | '/dashboard/donor/watchlist'
+    | '/dashboard/student/milestones'
     | '/dashboard/student/submit'
+    | '/dashboard/student/updates'
+    | '/dashboard/student/wallet'
+    | '/dashboard/university/analytics'
+    | '/dashboard/university/milestones'
+    | '/dashboard/university/projects'
+    | '/dashboard/university/students'
     | '/dashboard/admin/'
     | '/dashboard/donor/'
     | '/dashboard/student/'
@@ -173,7 +328,22 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/project/$slug'
+    | '/dashboard/admin/approvals'
+    | '/dashboard/admin/disputes'
+    | '/dashboard/admin/ledger'
+    | '/dashboard/admin/releases'
+    | '/dashboard/admin/settings'
+    | '/dashboard/donor/donations'
+    | '/dashboard/donor/profile'
+    | '/dashboard/donor/watchlist'
+    | '/dashboard/student/milestones'
     | '/dashboard/student/submit'
+    | '/dashboard/student/updates'
+    | '/dashboard/student/wallet'
+    | '/dashboard/university/analytics'
+    | '/dashboard/university/milestones'
+    | '/dashboard/university/projects'
+    | '/dashboard/university/students'
     | '/dashboard/admin'
     | '/dashboard/donor'
     | '/dashboard/student'
@@ -189,7 +359,22 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/project/$slug'
+    | '/dashboard/admin/approvals'
+    | '/dashboard/admin/disputes'
+    | '/dashboard/admin/ledger'
+    | '/dashboard/admin/releases'
+    | '/dashboard/admin/settings'
+    | '/dashboard/donor/donations'
+    | '/dashboard/donor/profile'
+    | '/dashboard/donor/watchlist'
+    | '/dashboard/student/milestones'
     | '/dashboard/student/submit'
+    | '/dashboard/student/updates'
+    | '/dashboard/student/wallet'
+    | '/dashboard/university/analytics'
+    | '/dashboard/university/milestones'
+    | '/dashboard/university/projects'
+    | '/dashboard/university/students'
     | '/dashboard/admin/'
     | '/dashboard/donor/'
     | '/dashboard/student/'
@@ -301,6 +486,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/university/students': {
+      id: '/dashboard/university/students'
+      path: '/university/students'
+      fullPath: '/dashboard/university/students'
+      preLoaderRoute: typeof DashboardUniversityStudentsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/university/projects': {
+      id: '/dashboard/university/projects'
+      path: '/university/projects'
+      fullPath: '/dashboard/university/projects'
+      preLoaderRoute: typeof DashboardUniversityProjectsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/university/milestones': {
+      id: '/dashboard/university/milestones'
+      path: '/university/milestones'
+      fullPath: '/dashboard/university/milestones'
+      preLoaderRoute: typeof DashboardUniversityMilestonesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/university/analytics': {
+      id: '/dashboard/university/analytics'
+      path: '/university/analytics'
+      fullPath: '/dashboard/university/analytics'
+      preLoaderRoute: typeof DashboardUniversityAnalyticsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/student/wallet': {
+      id: '/dashboard/student/wallet'
+      path: '/student/wallet'
+      fullPath: '/dashboard/student/wallet'
+      preLoaderRoute: typeof DashboardStudentWalletRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/student/updates': {
+      id: '/dashboard/student/updates'
+      path: '/student/updates'
+      fullPath: '/dashboard/student/updates'
+      preLoaderRoute: typeof DashboardStudentUpdatesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/student/submit': {
       id: '/dashboard/student/submit'
       path: '/student/submit'
@@ -308,11 +535,89 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudentSubmitRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/student/milestones': {
+      id: '/dashboard/student/milestones'
+      path: '/student/milestones'
+      fullPath: '/dashboard/student/milestones'
+      preLoaderRoute: typeof DashboardStudentMilestonesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/donor/watchlist': {
+      id: '/dashboard/donor/watchlist'
+      path: '/donor/watchlist'
+      fullPath: '/dashboard/donor/watchlist'
+      preLoaderRoute: typeof DashboardDonorWatchlistRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/donor/profile': {
+      id: '/dashboard/donor/profile'
+      path: '/donor/profile'
+      fullPath: '/dashboard/donor/profile'
+      preLoaderRoute: typeof DashboardDonorProfileRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/donor/donations': {
+      id: '/dashboard/donor/donations'
+      path: '/donor/donations'
+      fullPath: '/dashboard/donor/donations'
+      preLoaderRoute: typeof DashboardDonorDonationsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/settings': {
+      id: '/dashboard/admin/settings'
+      path: '/admin/settings'
+      fullPath: '/dashboard/admin/settings'
+      preLoaderRoute: typeof DashboardAdminSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/releases': {
+      id: '/dashboard/admin/releases'
+      path: '/admin/releases'
+      fullPath: '/dashboard/admin/releases'
+      preLoaderRoute: typeof DashboardAdminReleasesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/ledger': {
+      id: '/dashboard/admin/ledger'
+      path: '/admin/ledger'
+      fullPath: '/dashboard/admin/ledger'
+      preLoaderRoute: typeof DashboardAdminLedgerRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/disputes': {
+      id: '/dashboard/admin/disputes'
+      path: '/admin/disputes'
+      fullPath: '/dashboard/admin/disputes'
+      preLoaderRoute: typeof DashboardAdminDisputesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/approvals': {
+      id: '/dashboard/admin/approvals'
+      path: '/admin/approvals'
+      fullPath: '/dashboard/admin/approvals'
+      preLoaderRoute: typeof DashboardAdminApprovalsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
 interface DashboardRouteChildren {
+  DashboardAdminApprovalsRoute: typeof DashboardAdminApprovalsRoute
+  DashboardAdminDisputesRoute: typeof DashboardAdminDisputesRoute
+  DashboardAdminLedgerRoute: typeof DashboardAdminLedgerRoute
+  DashboardAdminReleasesRoute: typeof DashboardAdminReleasesRoute
+  DashboardAdminSettingsRoute: typeof DashboardAdminSettingsRoute
+  DashboardDonorDonationsRoute: typeof DashboardDonorDonationsRoute
+  DashboardDonorProfileRoute: typeof DashboardDonorProfileRoute
+  DashboardDonorWatchlistRoute: typeof DashboardDonorWatchlistRoute
+  DashboardStudentMilestonesRoute: typeof DashboardStudentMilestonesRoute
   DashboardStudentSubmitRoute: typeof DashboardStudentSubmitRoute
+  DashboardStudentUpdatesRoute: typeof DashboardStudentUpdatesRoute
+  DashboardStudentWalletRoute: typeof DashboardStudentWalletRoute
+  DashboardUniversityAnalyticsRoute: typeof DashboardUniversityAnalyticsRoute
+  DashboardUniversityMilestonesRoute: typeof DashboardUniversityMilestonesRoute
+  DashboardUniversityProjectsRoute: typeof DashboardUniversityProjectsRoute
+  DashboardUniversityStudentsRoute: typeof DashboardUniversityStudentsRoute
   DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
   DashboardDonorIndexRoute: typeof DashboardDonorIndexRoute
   DashboardStudentIndexRoute: typeof DashboardStudentIndexRoute
@@ -320,7 +625,22 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAdminApprovalsRoute: DashboardAdminApprovalsRoute,
+  DashboardAdminDisputesRoute: DashboardAdminDisputesRoute,
+  DashboardAdminLedgerRoute: DashboardAdminLedgerRoute,
+  DashboardAdminReleasesRoute: DashboardAdminReleasesRoute,
+  DashboardAdminSettingsRoute: DashboardAdminSettingsRoute,
+  DashboardDonorDonationsRoute: DashboardDonorDonationsRoute,
+  DashboardDonorProfileRoute: DashboardDonorProfileRoute,
+  DashboardDonorWatchlistRoute: DashboardDonorWatchlistRoute,
+  DashboardStudentMilestonesRoute: DashboardStudentMilestonesRoute,
   DashboardStudentSubmitRoute: DashboardStudentSubmitRoute,
+  DashboardStudentUpdatesRoute: DashboardStudentUpdatesRoute,
+  DashboardStudentWalletRoute: DashboardStudentWalletRoute,
+  DashboardUniversityAnalyticsRoute: DashboardUniversityAnalyticsRoute,
+  DashboardUniversityMilestonesRoute: DashboardUniversityMilestonesRoute,
+  DashboardUniversityProjectsRoute: DashboardUniversityProjectsRoute,
+  DashboardUniversityStudentsRoute: DashboardUniversityStudentsRoute,
   DashboardAdminIndexRoute: DashboardAdminIndexRoute,
   DashboardDonorIndexRoute: DashboardDonorIndexRoute,
   DashboardStudentIndexRoute: DashboardStudentIndexRoute,
@@ -345,3 +665,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
@@ -97,7 +97,10 @@ function ReleaseCenter() {
     <div className="rounded-2xl border border-border bg-card p-6">
       <div className="flex items-center justify-between">
         <h3 className="font-display font-semibold">Fund Release Center</h3>
-        <span className="text-xs text-muted-foreground">{pending.length} milestones awaiting</span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground">{pending.length} milestones awaiting</span>
+          <Link to="/dashboard/admin/releases" className="text-xs font-semibold text-teal hover:underline">Open full center →</Link>
+        </div>
       </div>
       <div className="mt-4 space-y-3">
         {pending.map((p) => {
@@ -127,7 +130,9 @@ function LedgerTable() {
     <div className="rounded-2xl border border-border bg-card p-6">
       <div className="flex items-center justify-between">
         <h3 className="font-display font-semibold">Recent Transactions</h3>
-        <Button variant="outline" size="sm">Export CSV</Button>
+        <Link to="/dashboard/admin/ledger">
+          <Button variant="outline" size="sm">Open full ledger</Button>
+        </Link>
       </div>
       <div className="mt-4 overflow-x-auto">
         <table className="w-full text-sm">
