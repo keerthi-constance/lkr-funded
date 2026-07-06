@@ -9,38 +9,242 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TransparencyRouteImport } from './routes/transparency'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProjectSlugRouteImport } from './routes/project.$slug'
+import { Route as AuthRegisterRouteImport } from './routes/auth.register'
+import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as DashboardUniversityIndexRouteImport } from './routes/dashboard.university.index'
+import { Route as DashboardStudentIndexRouteImport } from './routes/dashboard.student.index'
+import { Route as DashboardDonorIndexRouteImport } from './routes/dashboard.donor.index'
+import { Route as DashboardAdminIndexRouteImport } from './routes/dashboard.admin.index'
+import { Route as DashboardStudentSubmitRouteImport } from './routes/dashboard.student.submit'
 
+const TransparencyRoute = TransparencyRouteImport.update({
+  id: '/transparency',
+  path: '/transparency',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrowseRoute = BrowseRouteImport.update({
+  id: '/browse',
+  path: '/browse',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectSlugRoute = ProjectSlugRouteImport.update({
+  id: '/project/$slug',
+  path: '/project/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/auth/register',
+  path: '/auth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardUniversityIndexRoute =
+  DashboardUniversityIndexRouteImport.update({
+    id: '/university/',
+    path: '/university/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardStudentIndexRoute = DashboardStudentIndexRouteImport.update({
+  id: '/student/',
+  path: '/student/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardDonorIndexRoute = DashboardDonorIndexRouteImport.update({
+  id: '/donor/',
+  path: '/donor/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardStudentSubmitRoute = DashboardStudentSubmitRouteImport.update({
+  id: '/student/submit',
+  path: '/student/submit',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/browse': typeof BrowseRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/how-it-works': typeof HowItWorksRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/transparency': typeof TransparencyRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/project/$slug': typeof ProjectSlugRoute
+  '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
+  '/dashboard/admin/': typeof DashboardAdminIndexRoute
+  '/dashboard/donor/': typeof DashboardDonorIndexRoute
+  '/dashboard/student/': typeof DashboardStudentIndexRoute
+  '/dashboard/university/': typeof DashboardUniversityIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/browse': typeof BrowseRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/how-it-works': typeof HowItWorksRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/transparency': typeof TransparencyRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/project/$slug': typeof ProjectSlugRoute
+  '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
+  '/dashboard/admin': typeof DashboardAdminIndexRoute
+  '/dashboard/donor': typeof DashboardDonorIndexRoute
+  '/dashboard/student': typeof DashboardStudentIndexRoute
+  '/dashboard/university': typeof DashboardUniversityIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/browse': typeof BrowseRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/how-it-works': typeof HowItWorksRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/transparency': typeof TransparencyRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/project/$slug': typeof ProjectSlugRoute
+  '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
+  '/dashboard/admin/': typeof DashboardAdminIndexRoute
+  '/dashboard/donor/': typeof DashboardDonorIndexRoute
+  '/dashboard/student/': typeof DashboardStudentIndexRoute
+  '/dashboard/university/': typeof DashboardUniversityIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/browse'
+    | '/dashboard'
+    | '/how-it-works'
+    | '/sitemap.xml'
+    | '/transparency'
+    | '/auth/login'
+    | '/auth/register'
+    | '/project/$slug'
+    | '/dashboard/student/submit'
+    | '/dashboard/admin/'
+    | '/dashboard/donor/'
+    | '/dashboard/student/'
+    | '/dashboard/university/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/browse'
+    | '/dashboard'
+    | '/how-it-works'
+    | '/sitemap.xml'
+    | '/transparency'
+    | '/auth/login'
+    | '/auth/register'
+    | '/project/$slug'
+    | '/dashboard/student/submit'
+    | '/dashboard/admin'
+    | '/dashboard/donor'
+    | '/dashboard/student'
+    | '/dashboard/university'
+  id:
+    | '__root__'
+    | '/'
+    | '/browse'
+    | '/dashboard'
+    | '/how-it-works'
+    | '/sitemap.xml'
+    | '/transparency'
+    | '/auth/login'
+    | '/auth/register'
+    | '/project/$slug'
+    | '/dashboard/student/submit'
+    | '/dashboard/admin/'
+    | '/dashboard/donor/'
+    | '/dashboard/student/'
+    | '/dashboard/university/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BrowseRoute: typeof BrowseRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
+  HowItWorksRoute: typeof HowItWorksRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TransparencyRoute: typeof TransparencyRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
+  ProjectSlugRoute: typeof ProjectSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/transparency': {
+      id: '/transparency'
+      path: '/transparency'
+      fullPath: '/transparency'
+      preLoaderRoute: typeof TransparencyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/browse': {
+      id: '/browse'
+      path: '/browse'
+      fullPath: '/browse'
+      preLoaderRoute: typeof BrowseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +252,96 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/project/$slug': {
+      id: '/project/$slug'
+      path: '/project/$slug'
+      fullPath: '/project/$slug'
+      preLoaderRoute: typeof ProjectSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/register': {
+      id: '/auth/register'
+      path: '/auth/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/university/': {
+      id: '/dashboard/university/'
+      path: '/university'
+      fullPath: '/dashboard/university/'
+      preLoaderRoute: typeof DashboardUniversityIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/student/': {
+      id: '/dashboard/student/'
+      path: '/student'
+      fullPath: '/dashboard/student/'
+      preLoaderRoute: typeof DashboardStudentIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/donor/': {
+      id: '/dashboard/donor/'
+      path: '/donor'
+      fullPath: '/dashboard/donor/'
+      preLoaderRoute: typeof DashboardDonorIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/': {
+      id: '/dashboard/admin/'
+      path: '/admin'
+      fullPath: '/dashboard/admin/'
+      preLoaderRoute: typeof DashboardAdminIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/student/submit': {
+      id: '/dashboard/student/submit'
+      path: '/student/submit'
+      fullPath: '/dashboard/student/submit'
+      preLoaderRoute: typeof DashboardStudentSubmitRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
+interface DashboardRouteChildren {
+  DashboardStudentSubmitRoute: typeof DashboardStudentSubmitRoute
+  DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
+  DashboardDonorIndexRoute: typeof DashboardDonorIndexRoute
+  DashboardStudentIndexRoute: typeof DashboardStudentIndexRoute
+  DashboardUniversityIndexRoute: typeof DashboardUniversityIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardStudentSubmitRoute: DashboardStudentSubmitRoute,
+  DashboardAdminIndexRoute: DashboardAdminIndexRoute,
+  DashboardDonorIndexRoute: DashboardDonorIndexRoute,
+  DashboardStudentIndexRoute: DashboardStudentIndexRoute,
+  DashboardUniversityIndexRoute: DashboardUniversityIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BrowseRoute: BrowseRoute,
+  DashboardRoute: DashboardRouteWithChildren,
+  HowItWorksRoute: HowItWorksRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TransparencyRoute: TransparencyRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
+  ProjectSlugRoute: ProjectSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
