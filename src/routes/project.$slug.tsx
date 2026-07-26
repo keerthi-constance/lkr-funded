@@ -410,10 +410,6 @@ function DonateDialog({
   };
 
   const pickWallet = async (key: WalletKey) => {
-    if (!installed.includes(key)) {
-      toast.error(`${WALLET_LABELS[key].name} isn't installed in this browser.`);
-      return;
-    }
     setConnecting(key);
     setError("");
     try {

@@ -33,10 +33,6 @@ function WalletPage() {
   }, []);
 
   const connect = async (key: WalletKey) => {
-    if (!installed.includes(key)) {
-      toast.error(`${WALLET_LABELS[key].name} isn't installed in this browser.`);
-      return;
-    }
     setConnecting(key);
     try {
       const connected = await connectWallet(key);
