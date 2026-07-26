@@ -32,6 +32,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { formatRs, toAda, shortHash, type Project, type MilestoneStatus } from "@/lib/mock-data";
 import { getProjectBySlug, createDonation } from "@/backend/functions";
+import {
+  SUPPORTED_WALLETS,
+  WALLET_LABELS,
+  getInstalledWalletKeys,
+  connectWallet,
+  type WalletKey,
+  type ConnectedWallet,
+} from "@/lib/cardano-wallet";
 
 export const Route = createFileRoute("/project/$slug")({
   loader: async ({ params }) => {
@@ -378,6 +386,9 @@ function DonateDialog({
   const [step, setStep] = useState<"amount" | "wallet" | "processing" | "success">("amount");
   const [txHash, setTxHash] = useState("");
   const [error, setError] = useState("");
+  const [installed, setInstalled] = useState<WalletKey[]>([]);
+  const [connecting, setConnecting] = useState<WalletKey | null>(null);
+  const [wallet, setWallet] = useState<ConnectedWallet | null>(null);
 
   const fee = Math.round(amount * 0.02);
   const net = amount - fee;
@@ -389,13 +400,28 @@ function DonateDialog({
     setAnon(false);
     setTxHash("");
     setError("");
+    setWallet(null);
+    setConnecting(null);
   };
 
-  const connect = async () => {
-    setStep("processing");
+  const goToWallet = () => {
+    setInstalled(getInstalledWalletKeys());
+    setStep("wallet");
+  };
+
+  const pickWallet = async (key: WalletKey) => {
+    if (!installed.includes(key)) {
+      toast.error(`${WALLET_LABELS[key].name} isn't installed in this browser.`);
+      return;
+    }
+    setConnecting(key);
+    setError("");
     try {
+      const connected = await connectWallet(key);
+      setWallet(connected);
+      setStep("processing");
       const result = await createDonation({
-        data: { slug: projectSlug, amount, donor: "Donor", message, anonymous: anon },
+        data: { slug: projectSlug, amount, donor: connected.address, message, anonymous: anon },
       });
       setTxHash(result.txHash);
       onDonated(result.raised, result.donors);
@@ -407,8 +433,10 @@ function DonateDialog({
         colors: ["#14E0C4", "#F2B84B", "#ffffff"],
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Donation failed. Please try again.");
-      setStep("amount");
+      setError(err instanceof Error ? err.message : "Wallet connection failed. Please try again.");
+      setStep("wallet");
+    } finally {
+      setConnecting(null);
     }
   };
 
@@ -455,7 +483,7 @@ function DonateDialog({
                 Donate anonymously
               </label>
               {error && <div className="rounded-lg bg-destructive/10 p-2 text-xs text-destructive">{error}</div>}
-              <Button onClick={() => setStep("wallet")} className="w-full bg-teal-gradient text-navy-deep">
+              <Button onClick={goToWallet} className="w-full bg-teal-gradient text-navy-deep">
                 Continue to Wallet <Wallet className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -464,26 +492,37 @@ function DonateDialog({
         {step === "wallet" && (
           <>
             <DialogHeader><DialogTitle>Connect your wallet</DialogTitle></DialogHeader>
+            {error && <div className="rounded-lg bg-destructive/10 p-2 text-xs text-destructive">{error}</div>}
             <div className="space-y-2">
-              {[
-                { name: "Nami", desc: "Popular Cardano browser wallet" },
-                { name: "Eternl", desc: "Feature-rich multi-account wallet" },
-                { name: "Lace", desc: "Official IOG wallet" },
-              ].map((w) => (
-                <button
-                  key={w.name}
-                  onClick={connect}
-                  className="flex w-full items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition hover:border-teal hover:bg-teal/5"
-                >
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-teal-gradient font-display font-bold text-navy-deep">
-                    {w.name[0]}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold">{w.name}</div>
-                    <div className="text-xs text-muted-foreground">{w.desc}</div>
-                  </div>
-                </button>
-              ))}
+              {SUPPORTED_WALLETS.map((key) => {
+                const w = WALLET_LABELS[key];
+                const isInstalled = installed.includes(key);
+                const isConnecting = connecting === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => pickWallet(key)}
+                    disabled={connecting !== null}
+                    className={`flex w-full items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition ${isInstalled ? "hover:border-teal hover:bg-teal/5" : "opacity-60"} disabled:cursor-wait`}
+                  >
+                    <div className="grid h-10 w-10 place-items-center rounded-lg bg-teal-gradient font-display font-bold text-navy-deep">
+                      {isConnecting ? (
+                        <motion.span animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
+                          <Wallet className="h-4 w-4" />
+                        </motion.span>
+                      ) : (
+                        w.name[0]
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-semibold">{w.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {isConnecting ? "Approve in your wallet..." : isInstalled ? w.desc : "Not installed in this browser"}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </>
         )}
@@ -492,8 +531,8 @@ function DonateDialog({
             <div className="pulse-ring mx-auto grid h-16 w-16 place-items-center rounded-full bg-teal-gradient">
               <Wallet className="h-7 w-7 text-navy-deep" />
             </div>
-            <h3 className="mt-6 font-display text-xl font-bold">Processing transaction...</h3>
-            <p className="mt-2 text-sm text-muted-foreground">Please approve in your wallet.</p>
+            <h3 className="mt-6 font-display text-xl font-bold">Recording your donation...</h3>
+            <p className="mt-2 text-sm text-muted-foreground">Wallet connected. Saving to the platform ledger.</p>
           </div>
         )}
         {step === "success" && (
@@ -510,8 +549,15 @@ function DonateDialog({
             <p className="mt-2 text-sm text-muted-foreground">
               Your donation of <span className="font-semibold text-foreground">{formatRs(amount)}</span> to {projectTitle} was successful.
             </p>
-            <div className="mt-6 rounded-xl border border-border bg-muted/40 p-4 text-left text-xs">
-              <div className="text-muted-foreground">Transaction Hash</div>
+            {wallet && (
+              <div className="mt-6 rounded-xl border border-border bg-muted/40 p-4 text-left text-xs">
+                <div className="text-muted-foreground">Connected Wallet ({WALLET_LABELS[wallet.key].name})</div>
+                <div className="mt-1 truncate font-mono">{shortHash(wallet.address)}</div>
+                <div className="mt-1 text-muted-foreground">Balance: {wallet.balanceAda.toLocaleString()} ADA</div>
+              </div>
+            )}
+            <div className="mt-3 rounded-xl border border-border bg-muted/40 p-4 text-left text-xs">
+              <div className="text-muted-foreground">Platform Record ID</div>
               <div className="mt-1 flex items-center justify-between gap-2">
                 <span className="truncate font-mono">{shortHash(txHash)}</span>
                 <a href="#" className="inline-flex flex-none items-center gap-1 font-semibold text-teal hover:underline">

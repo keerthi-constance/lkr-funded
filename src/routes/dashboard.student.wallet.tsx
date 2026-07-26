@@ -1,11 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Wallet, ExternalLink, Copy, CheckCircle2 } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { formatRs, shortHash, toAda } from "@/lib/mock-data";
+import {
+  SUPPORTED_WALLETS,
+  WALLET_LABELS,
+  getInstalledWalletKeys,
+  connectWallet,
+  type WalletKey,
+  type ConnectedWallet,
+} from "@/lib/cardano-wallet";
 
 export const Route = createFileRoute("/dashboard/student/wallet")({
   component: WalletPage,
@@ -16,18 +24,29 @@ const payoutHistory = [
 ];
 
 function WalletPage() {
-  const [connected, setConnected] = useState(false);
-  const [connecting, setConnecting] = useState(false);
-  const address = "addr1qxy2v8k9f3c9b2e7d4a1f6c8b9e2d5a7f1c3b8e0a8f3c9b2e";
-  const balance = 1842.5;
+  const [wallet, setWallet] = useState<ConnectedWallet | null>(null);
+  const [connecting, setConnecting] = useState<WalletKey | null>(null);
+  const [installed, setInstalled] = useState<WalletKey[]>([]);
 
-  const connect = () => {
-    setConnecting(true);
-    setTimeout(() => {
-      setConnecting(false);
-      setConnected(true);
-      toast.success("Wallet connected!");
-    }, 1400);
+  useEffect(() => {
+    setInstalled(getInstalledWalletKeys());
+  }, []);
+
+  const connect = async (key: WalletKey) => {
+    if (!installed.includes(key)) {
+      toast.error(`${WALLET_LABELS[key].name} isn't installed in this browser.`);
+      return;
+    }
+    setConnecting(key);
+    try {
+      const connected = await connectWallet(key);
+      setWallet(connected);
+      toast.success(`${WALLET_LABELS[key].name} connected!`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Wallet connection failed.");
+    } finally {
+      setConnecting(null);
+    }
   };
 
   return (
@@ -38,7 +57,7 @@ function WalletPage() {
           <p className="text-muted-foreground">Connect your Cardano wallet to receive milestone payouts.</p>
         </div>
 
-        {!connected ? (
+        {!wallet ? (
           <div className="rounded-2xl border border-border bg-card p-8 text-center">
             <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-teal/15 text-teal">
               {connecting ? (
@@ -49,12 +68,18 @@ function WalletPage() {
                 <Wallet className="h-6 w-6" />
               )}
             </div>
-            <h3 className="mt-4 font-display text-lg font-semibold">{connecting ? "Connecting..." : "No wallet connected"}</h3>
+            <h3 className="mt-4 font-display text-lg font-semibold">{connecting ? `Connecting to ${WALLET_LABELS[connecting].name}...` : "No wallet connected"}</h3>
             <p className="mt-1 text-sm text-muted-foreground">Connect Nami, Eternl, or Lace to view your balance and receive payouts.</p>
             <div className="mt-5 flex flex-wrap justify-center gap-2">
-              {["Nami", "Eternl", "Lace"].map((w) => (
-                <Button key={w} variant="outline" disabled={connecting} onClick={connect}>
-                  {w}
+              {SUPPORTED_WALLETS.map((key) => (
+                <Button
+                  key={key}
+                  variant="outline"
+                  disabled={connecting !== null}
+                  onClick={() => connect(key)}
+                  title={installed.includes(key) ? undefined : "Not installed in this browser"}
+                >
+                  {WALLET_LABELS[key].name}{!installed.includes(key) && <span className="ml-1 text-muted-foreground">(not installed)</span>}
                 </Button>
               ))}
             </div>
@@ -69,7 +94,7 @@ function WalletPage() {
               <div className="pulse-ring grid h-9 w-9 place-items-center rounded-full bg-teal-gradient text-navy-deep">
                 <CheckCircle2 className="h-4 w-4" />
               </div>
-              <span className="font-semibold">Wallet connected</span>
+              <span className="font-semibold">{WALLET_LABELS[wallet.key].name} connected</span>
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
@@ -77,17 +102,17 @@ function WalletPage() {
                 <button
                   className="mt-1 inline-flex items-center gap-1.5 font-mono text-sm hover:text-teal"
                   onClick={() => {
-                    navigator.clipboard.writeText(address);
+                    navigator.clipboard.writeText(wallet.address);
                     toast.success("Address copied");
                   }}
                 >
-                  {shortHash(address)} <Copy className="h-3.5 w-3.5" />
+                  {shortHash(wallet.address)} <Copy className="h-3.5 w-3.5" />
                 </button>
               </div>
               <div>
                 <div className="text-xs uppercase tracking-wider text-muted-foreground">Balance</div>
-                <div className="mt-1 font-display text-2xl font-bold">{balance.toLocaleString()} ADA</div>
-                <div className="text-xs text-muted-foreground">≈ {formatRs(Math.round(balance * 172))}</div>
+                <div className="mt-1 font-display text-2xl font-bold">{wallet.balanceAda.toLocaleString()} ADA</div>
+                <div className="text-xs text-muted-foreground">≈ {formatRs(Math.round(wallet.balanceAda * 172))}</div>
               </div>
             </div>
           </motion.div>
