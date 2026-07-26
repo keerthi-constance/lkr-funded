@@ -1,13 +1,23 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 
+import { getProjects, getPlatformStats, getUniversities } from "@/backend/functions";
+
 export const Route = createFileRoute("/")({
+  loader: async () => {
+    const [projects, platformStats, universities] = await Promise.all([
+      getProjects(),
+      getPlatformStats(),
+      getUniversities(),
+    ]);
+    return { projects, platformStats, universities };
+  },
   component: LandingLayout,
 });
 
 function LandingLayout() {
-  // Since this is index route, render landing content
-  return <Landing />;
+  const { projects, platformStats, universities } = Route.useLoaderData();
+  return <Landing projects={projects} platformStats={platformStats} universities={universities} />;
 }
 
 import { motion } from "framer-motion";
@@ -16,9 +26,17 @@ import { Button } from "@/components/ui/button";
 import { NodeNetwork } from "@/components/node-network";
 import { CountUp, FadeIn } from "@/components/motion-primitives";
 import { ProjectCard } from "@/components/project-card";
-import { projects, platformStats, universities } from "@/lib/mock-data";
+import type { Project } from "@/lib/mock-data";
 
-function Landing() {
+function Landing({
+  projects,
+  platformStats,
+  universities,
+}: {
+  projects: Project[];
+  platformStats: { totalRaised: number; activeProjects: number; universities: number; milestonesCompleted: number; donors: number };
+  universities: { name: string; short: string; logo: string }[];
+}) {
   return (
     <>
       <SiteHeader />

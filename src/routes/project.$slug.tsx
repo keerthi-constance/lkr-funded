@@ -30,11 +30,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { projects, formatRs, toAda, shortHash, type MilestoneStatus } from "@/lib/mock-data";
+import { formatRs, toAda, shortHash, type Project, type MilestoneStatus } from "@/lib/mock-data";
+import { getProjectBySlug, createDonation } from "@/backend/functions";
 
 export const Route = createFileRoute("/project/$slug")({
-  loader: ({ params }) => {
-    const project = projects.find((p) => p.slug === params.slug);
+  loader: async ({ params }) => {
+    const project = await getProjectBySlug({ data: params.slug });
     if (!project) throw notFound();
     return { project };
   },
@@ -61,7 +62,8 @@ const milestoneStyles: Record<MilestoneStatus, { color: string; label: string; i
 };
 
 function ProjectPage() {
-  const { project } = Route.useLoaderData();
+  const { project: loaderProject } = Route.useLoaderData();
+  const [project, setProject] = useState(loaderProject);
   const [donateOpen, setDonateOpen] = useState(false);
   const pct = Math.min(100, Math.round((project.raised / project.goal) * 100));
 
@@ -286,6 +288,8 @@ function ProjectPage() {
         open={donateOpen}
         onOpenChange={setDonateOpen}
         projectTitle={project.title}
+        projectSlug={project.slug}
+        onDonated={(raised, donors) => setProject((p) => ({ ...p, raised, donors }))}
       />
     </>
   );
@@ -311,7 +315,7 @@ function Stat({ icon: Icon, label, value }: { icon: any; label: string; value: s
   );
 }
 
-function MilestoneStepper({ project }: { project: typeof projects[number] }) {
+function MilestoneStepper({ project }: { project: Project }) {
   return (
     <div className="space-y-4">
       {project.milestones.map((m, i) => {
@@ -359,15 +363,21 @@ function DonateDialog({
   open,
   onOpenChange,
   projectTitle,
+  projectSlug,
+  onDonated,
 }: {
   open: boolean;
   onOpenChange: (b: boolean) => void;
   projectTitle: string;
+  projectSlug: string;
+  onDonated: (raised: number, donors: number) => void;
 }) {
   const [amount, setAmount] = useState(1000);
   const [message, setMessage] = useState("");
   const [anon, setAnon] = useState(false);
   const [step, setStep] = useState<"amount" | "wallet" | "processing" | "success">("amount");
+  const [txHash, setTxHash] = useState("");
+  const [error, setError] = useState("");
 
   const fee = Math.round(amount * 0.02);
   const net = amount - fee;
@@ -377,11 +387,18 @@ function DonateDialog({
     setAmount(1000);
     setMessage("");
     setAnon(false);
+    setTxHash("");
+    setError("");
   };
 
-  const connect = () => {
+  const connect = async () => {
     setStep("processing");
-    setTimeout(() => {
+    try {
+      const result = await createDonation({
+        data: { slug: projectSlug, amount, donor: "Donor", message, anonymous: anon },
+      });
+      setTxHash(result.txHash);
+      onDonated(result.raised, result.donors);
       setStep("success");
       confetti({
         particleCount: 120,
@@ -389,7 +406,10 @@ function DonateDialog({
         origin: { y: 0.4 },
         colors: ["#14E0C4", "#F2B84B", "#ffffff"],
       });
-    }, 1800);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Donation failed. Please try again.");
+      setStep("amount");
+    }
   };
 
   return (
@@ -434,6 +454,7 @@ function DonateDialog({
                 <input type="checkbox" checked={anon} onChange={(e) => setAnon(e.target.checked)} />
                 Donate anonymously
               </label>
+              {error && <div className="rounded-lg bg-destructive/10 p-2 text-xs text-destructive">{error}</div>}
               <Button onClick={() => setStep("wallet")} className="w-full bg-teal-gradient text-navy-deep">
                 Continue to Wallet <Wallet className="ml-2 h-4 w-4" />
               </Button>
@@ -492,7 +513,7 @@ function DonateDialog({
             <div className="mt-6 rounded-xl border border-border bg-muted/40 p-4 text-left text-xs">
               <div className="text-muted-foreground">Transaction Hash</div>
               <div className="mt-1 flex items-center justify-between gap-2">
-                <span className="truncate font-mono">tx_9f3c8b2a7e4d1f6c8b9e2d5a7f1c3b8e</span>
+                <span className="truncate font-mono">{shortHash(txHash)}</span>
                 <a href="#" className="inline-flex flex-none items-center gap-1 font-semibold text-teal hover:underline">
                   Explorer <ExternalLink className="h-3 w-3" />
                 </a>

@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, LayoutGrid, List } from "lucide-react";
 import { ProjectCard } from "@/components/project-card";
-import { projects, categories, universities } from "@/lib/mock-data";
+import { categories, universities } from "@/lib/mock-data";
+import { getProjects } from "@/backend/functions";
 
 export const Route = createFileRoute("/browse")({
+  loader: () => getProjects(),
   head: () => ({
     meta: [
       { title: "Browse Projects — FundEd" },
@@ -19,6 +21,7 @@ export const Route = createFileRoute("/browse")({
 });
 
 function BrowsePage() {
+  const projects = Route.useLoaderData();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string | null>(null);
   const [uni, setUni] = useState<string | null>(null);

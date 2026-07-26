@@ -1,11 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { ExternalLink } from "lucide-react";
-import { recentDonations, shortHash, formatRs, platformStats } from "@/lib/mock-data";
+import { shortHash, formatRs } from "@/lib/mock-data";
 import { StatCard } from "@/components/stat-card";
 import { Coins, ShieldCheck, TrendingUp } from "lucide-react";
+import { getPlatformStats, getRecentDonations } from "@/backend/functions";
 
 export const Route = createFileRoute("/transparency")({
+  loader: async () => {
+    const [platformStats, recentDonations] = await Promise.all([getPlatformStats(), getRecentDonations()]);
+    return { platformStats, recentDonations };
+  },
   head: () => ({
     meta: [
       { title: "Transparency Ledger — FundEd" },
@@ -16,6 +21,7 @@ export const Route = createFileRoute("/transparency")({
 });
 
 function TransparencyPage() {
+  const { platformStats, recentDonations } = Route.useLoaderData();
   return (
     <>
       <SiteHeader />
@@ -46,10 +52,10 @@ function TransparencyPage() {
                 {recentDonations.map((d, i) => (
                   <tr key={d.id}>
                     <td className="py-3"><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${i % 4 === 0 ? "bg-gold/15 text-gold" : "bg-teal/15 text-teal"}`}>{i % 4 === 0 ? "Release" : "Donation"}</span></td>
-                    <td className="py-3 max-w-xs truncate">{d.project}</td>
+                    <td className="py-3 max-w-xs truncate">{d.projectTitle}</td>
                     <td className="py-3 text-right font-semibold">{formatRs(d.amount)}</td>
                     <td className="py-3 pl-3"><a href="#" className="inline-flex items-center gap-1 font-mono text-xs text-teal hover:underline">{shortHash(d.txHash)} <ExternalLink className="h-3 w-3" /></a></td>
-                    <td className="py-3 text-right text-xs text-muted-foreground">{d.date}</td>
+                    <td className="py-3 text-right text-xs text-muted-foreground">{new Date(d.date).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
