@@ -14,5 +14,16 @@ export default defineConfig({
   },
   nitro: {
     preset: "vercel",
+    // Cardano's WASM crypto bindings (@anastasia-labs/cardano-multiplatform-lib-nodejs,
+    // pulled in via @lucid-evolution/lucid) load their .wasm file using __dirname —
+    // a CJS-only global that Nitro's bundler doesn't shim once the package is
+    // inlined into an ESM chunk, crashing every server function at import time
+    // in production ("__dirname is not defined in ES module scope"). Vercel's
+    // Node runtime (24.x) supports import.meta.dirname/filename natively, so
+    // swap the tokens at build time instead of trying to keep the package external.
+    replace: {
+      __dirname: "import.meta.dirname",
+      __filename: "import.meta.filename",
+    },
   },
 });
