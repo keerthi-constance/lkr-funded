@@ -38,7 +38,13 @@ export function getTreasuryLucid(): Promise<LucidEvolution> {
       const lucid = await Lucid(provider, "Preprod");
       lucid.selectWallet.fromSeed(requireEnv("TREASURY_MNEMONIC"));
       return lucid;
-    })();
+    })().catch((err) => {
+      // Don't memoize a failure — a transient Blockfrost/network hiccup on the
+      // first call in a warm serverless instance would otherwise poison every
+      // request that instance ever handles afterwards, forever.
+      treasuryLucid = undefined;
+      throw err;
+    });
   }
   return treasuryLucid;
 }
