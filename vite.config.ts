@@ -4,7 +4,30 @@
 //     componentTagger (dev-only), VITE_* env injection, @ path alias, React/TanStack dedupe,
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { readdir, copyFile } from "node:fs/promises";
+import path from "node:path";
+import { defineConfig, type LovableViteTanstackOptions } from "@lovable.dev/vite-tanstack-config";
+
+// @anastasia-labs/cardano-multiplatform-lib-nodejs (pulled in via @lucid-evolution/lucid)
+// is a wasm-bindgen package: its JS glue loads a sibling .wasm binary from its own
+// directory at runtime. Nitro's build inlines the JS into a shared vendor chunk under
+// _libs/@anastasia-labs/, but only copies JS/CSS — the .wasm binary itself never makes
+// it into the deployed function, so production 500s with ENOENT for it. Copy it over
+// by hand once the function bundle exists.
+const WASM_SOURCE = path.resolve(
+  "node_modules/@anastasia-labs/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib_bg.wasm",
+);
+async function copyCardanoWasm(serverDir: string) {
+  const libsDir = path.join(serverDir, "_libs", "@anastasia-labs");
+  let entries: string[];
+  try {
+    entries = await readdir(libsDir);
+  } catch {
+    return; // vendor chunk wasn't emitted (e.g. dev build) — nothing to patch
+  }
+  if (!entries.some((f) => f.startsWith("cardano-multiplatform-lib-nodejs"))) return;
+  await copyFile(WASM_SOURCE, path.join(libsDir, "cardano_multiplatform_lib_bg.wasm"));
+}
 
 export default defineConfig({
   tanstackStart: {
@@ -25,5 +48,13 @@ export default defineConfig({
       __dirname: "import.meta.dirname",
       __filename: "import.meta.filename",
     },
-  },
+    hooks: {
+      async compiled(nitro: { options: { output: { serverDir: string } } }) {
+        await copyCardanoWasm(nitro.options.output.serverDir);
+      },
+    },
+    // `nitro`'s declared type here only covers preset/output/cloudflare — deliberately
+    // narrow (see the option's doc comment) — but replace/hooks are real Nitro v3 config
+    // keys that the wrapper spreads through untyped at runtime, so this cast is safe.
+  } as LovableViteTanstackOptions["nitro"],
 });
