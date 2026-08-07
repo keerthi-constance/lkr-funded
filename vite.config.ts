@@ -4,33 +4,7 @@
 //     componentTagger (dev-only), VITE_* env injection, @ path alias, React/TanStack dedupe,
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
-import { readdir, copyFile } from "node:fs/promises";
-import path from "node:path";
 import { defineConfig, type LovableViteTanstackOptions } from "@lovable.dev/vite-tanstack-config";
-
-// @anastasia-labs/cardano-multiplatform-lib-nodejs (pulled in via @lucid-evolution/lucid)
-// is a wasm-bindgen package: its JS glue loads a sibling .wasm binary from its own
-// directory at runtime. Nitro's build inlines the JS into a shared vendor chunk under
-// _libs/@anastasia-labs/, but only copies JS/CSS — the .wasm binary itself never makes
-// it into the deployed function, so production 500s with ENOENT for it. Copy it over
-// by hand once the function bundle exists.
-const WASM_SOURCE = path.resolve(
-  "node_modules/@anastasia-labs/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib_bg.wasm",
-);
-// Best-effort only: this just makes the production donation/contract-viewer
-// paths work. It must never throw — an uncaught rejection here would abort
-// Nitro's own "compiled" hook chain (which is what writes Vercel's
-// config.json) and take the *entire* deployment down with it.
-async function copyCardanoWasm(serverDir: string) {
-  try {
-    const libsDir = path.join(serverDir, "_libs", "@anastasia-labs");
-    const entries = await readdir(libsDir);
-    if (!entries.some((f) => f.startsWith("cardano-multiplatform-lib-nodejs"))) return;
-    await copyFile(WASM_SOURCE, path.join(libsDir, "cardano_multiplatform_lib_bg.wasm"));
-  } catch (err) {
-    console.warn("[vite.config] Could not copy cardano_multiplatform_lib_bg.wasm into the function bundle:", err);
-  }
-}
 
 export default defineConfig({
   tanstackStart: {
@@ -51,13 +25,8 @@ export default defineConfig({
       __dirname: "import.meta.dirname",
       __filename: "import.meta.filename",
     },
-    hooks: {
-      async compiled(nitro: { options: { output: { serverDir: string } } }) {
-        await copyCardanoWasm(nitro.options.output.serverDir);
-      },
-    },
     // `nitro`'s declared type here only covers preset/output/cloudflare — deliberately
-    // narrow (see the option's doc comment) — but replace/hooks are real Nitro v3 config
-    // keys that the wrapper spreads through untyped at runtime, so this cast is safe.
+    // narrow (see the option's doc comment) — but `replace` is a real Nitro v3 config
+    // key that the wrapper spreads through untyped at runtime, so this cast is safe.
   } as LovableViteTanstackOptions["nitro"],
 });
