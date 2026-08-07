@@ -17,16 +17,19 @@ import { defineConfig, type LovableViteTanstackOptions } from "@lovable.dev/vite
 const WASM_SOURCE = path.resolve(
   "node_modules/@anastasia-labs/cardano-multiplatform-lib-nodejs/cardano_multiplatform_lib_bg.wasm",
 );
+// Best-effort only: this just makes the production donation/contract-viewer
+// paths work. It must never throw — an uncaught rejection here would abort
+// Nitro's own "compiled" hook chain (which is what writes Vercel's
+// config.json) and take the *entire* deployment down with it.
 async function copyCardanoWasm(serverDir: string) {
-  const libsDir = path.join(serverDir, "_libs", "@anastasia-labs");
-  let entries: string[];
   try {
-    entries = await readdir(libsDir);
-  } catch {
-    return; // vendor chunk wasn't emitted (e.g. dev build) — nothing to patch
+    const libsDir = path.join(serverDir, "_libs", "@anastasia-labs");
+    const entries = await readdir(libsDir);
+    if (!entries.some((f) => f.startsWith("cardano-multiplatform-lib-nodejs"))) return;
+    await copyFile(WASM_SOURCE, path.join(libsDir, "cardano_multiplatform_lib_bg.wasm"));
+  } catch (err) {
+    console.warn("[vite.config] Could not copy cardano_multiplatform_lib_bg.wasm into the function bundle:", err);
   }
-  if (!entries.some((f) => f.startsWith("cardano-multiplatform-lib-nodejs"))) return;
-  await copyFile(WASM_SOURCE, path.join(libsDir, "cardano_multiplatform_lib_bg.wasm"));
 }
 
 export default defineConfig({
