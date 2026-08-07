@@ -2,8 +2,6 @@
 // built via `aiken build` in contracts/) into concrete, parameter-applied
 // scripts usable by Lucid Evolution. Never imported from client code — same
 // import-protection boundary as cardano-treasury.ts.
-import { readFileSync } from "node:fs";
-import path from "node:path";
 import {
   applyParamsToScript,
   validatorToAddress,
@@ -14,6 +12,12 @@ import {
   type Script,
 } from "@lucid-evolution/lucid";
 import { getTreasuryLucid } from "./cardano-treasury";
+// Imported (not read via fs at runtime) so the bundler embeds the blueprint's
+// content directly into the compiled output. A runtime fs.readFileSync(path.join
+// (process.cwd(), "contracts/plutus.json")) worked in local dev but 500'd in
+// production — contracts/plutus.json never actually ships as a file in the
+// deployed Vercel function, so process.cwd() had nothing to find there.
+import plutusBlueprint from "../../../contracts/plutus.json";
 
 // Rs per ADA — mirrors src/lib/mock-data.ts's ADA_RATE and functions.ts's
 // own copy. Baked into the eduf_mint validator as a compile-time parameter,
@@ -59,8 +63,7 @@ type Blueprint = {
 };
 
 function loadBlueprint(): Blueprint {
-  const blueprintPath = path.join(process.cwd(), "contracts", "plutus.json");
-  return JSON.parse(readFileSync(blueprintPath, "utf8"));
+  return plutusBlueprint as unknown as Blueprint;
 }
 
 function findValidator(blueprint: Blueprint, title: string) {
