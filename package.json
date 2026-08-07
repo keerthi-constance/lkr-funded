@@ -13,7 +13,9 @@
     "seed": "tsx src/backend/seed.ts"
   },
   "dependencies": {
+    "@blockfrost/blockfrost-js": "^6.1.1",
     "@hookform/resolvers": "^5.2.2",
+    "@lucid-evolution/lucid": "^0.6.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-aspect-ratio": "^1.1.8",

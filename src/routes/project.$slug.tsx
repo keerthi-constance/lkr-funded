@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -12,12 +12,14 @@ import {
   Share2,
   ExternalLink,
   Lock,
+  FileCode2,
   FileText,
   Play,
   MessageCircle,
   Heart,
 } from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { ContractViewer } from "@/components/contract-viewer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,15 +33,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { formatRs, toAda, shortHash, type Project, type MilestoneStatus } from "@/lib/mock-data";
-import { getProjectBySlug, createDonation } from "@/backend/functions";
+import { getProjectBySlug, buildDonationTx, submitDonationTx, confirmDonation } from "@/backend/functions";
 import {
   SUPPORTED_WALLETS,
   WALLET_LABELS,
   getInstalledWalletKeys,
   connectWallet,
+  signTxWitness,
   type WalletKey,
   type ConnectedWallet,
 } from "@/lib/cardano-wallet";
+
+const EXPLORER_TX_URL = "https://preprod.cardanoscan.io/transaction/";
 
 export const Route = createFileRoute("/project/$slug")({
   loader: async ({ params }) => {
@@ -73,6 +78,7 @@ function ProjectPage() {
   const { project: loaderProject } = Route.useLoaderData();
   const [project, setProject] = useState(loaderProject);
   const [donateOpen, setDonateOpen] = useState(false);
+  const [contractOpen, setContractOpen] = useState(false);
   const pct = Math.min(100, Math.round((project.raised / project.goal) * 100));
 
   return (
@@ -264,6 +270,13 @@ function ProjectPage() {
                   >
                     <Heart className="mr-2 h-4 w-4" /> Donate Now
                   </Button>
+                  <Button
+                    variant="outline"
+                    className="mt-2 w-full border-teal/40 text-teal hover:bg-teal/10 hover:text-teal"
+                    onClick={() => setContractOpen(true)}
+                  >
+                    <FileCode2 className="mr-2 h-4 w-4" /> View Smart Contract
+                  </Button>
                   <div className="mt-3 flex gap-2">
                     <Button
                       variant="outline"
@@ -299,6 +312,8 @@ function ProjectPage() {
         projectSlug={project.slug}
         onDonated={(raised, donors) => setProject((p) => ({ ...p, raised, donors }))}
       />
+
+      <ContractViewer open={contractOpen} onOpenChange={setContractOpen} />
     </>
   );
 }
@@ -383,12 +398,14 @@ function DonateDialog({
   const [amount, setAmount] = useState(1000);
   const [message, setMessage] = useState("");
   const [anon, setAnon] = useState(false);
-  const [step, setStep] = useState<"amount" | "wallet" | "processing" | "success">("amount");
+  const [step, setStep] = useState<"amount" | "wallet" | "processing" | "pending" | "success" | "failed">("amount");
   const [txHash, setTxHash] = useState("");
   const [error, setError] = useState("");
   const [installed, setInstalled] = useState<WalletKey[]>([]);
   const [connecting, setConnecting] = useState<WalletKey | null>(null);
   const [wallet, setWallet] = useState<ConnectedWallet | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollCountRef = useRef(0);
 
   const fee = Math.round(amount * 0.02);
   const net = amount - fee;
@@ -402,11 +419,44 @@ function DonateDialog({
     setError("");
     setWallet(null);
     setConnecting(null);
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollCountRef.current = 0;
   };
+
+  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   const goToWallet = () => {
     setInstalled(getInstalledWalletKeys());
     setStep("wallet");
+  };
+
+  const startPolling = (hash: string) => {
+    pollCountRef.current = 0;
+    pollRef.current = setInterval(async () => {
+      pollCountRef.current += 1;
+      try {
+        const result = await confirmDonation({ data: hash });
+        if (result.status === "confirmed") {
+          if (pollRef.current) clearInterval(pollRef.current);
+          if (result.raised !== undefined && result.donors !== undefined) onDonated(result.raised, result.donors);
+          setStep("success");
+          confetti({
+            particleCount: 120,
+            spread: 90,
+            origin: { y: 0.4 },
+            colors: ["#14E0C4", "#F2B84B", "#ffffff"],
+          });
+        } else if (result.status === "failed") {
+          if (pollRef.current) clearInterval(pollRef.current);
+          setStep("failed");
+        } else if (pollCountRef.current >= 36) {
+          if (pollRef.current) clearInterval(pollRef.current);
+          setError("Still not confirmed after 3 minutes — check the explorer link, it may just be a slow block.");
+        }
+      } catch {
+        // transient network error while polling — keep trying until the cap.
+      }
+    }, 5000);
   };
 
   const pickWallet = async (key: WalletKey) => {
@@ -415,21 +465,31 @@ function DonateDialog({
     try {
       const connected = await connectWallet(key);
       setWallet(connected);
+      if (!connected.api) throw new Error("Wallet connected but no signing API available.");
+
       setStep("processing");
-      const result = await createDonation({
-        data: { slug: projectSlug, amount, donor: connected.address, message, anonymous: anon },
+      const utxosCbor = await connected.api.getUtxos();
+      if (!utxosCbor || utxosCbor.length === 0) {
+        throw new Error("No funded UTXOs found in this wallet. Fund it from the Cardano preprod faucet first.");
+      }
+
+      const donor = connected.address;
+      const { unsignedTxCbor, amountLovelace } = await buildDonationTx({
+        data: { slug: projectSlug, changeAddress: connected.address, utxosCbor, amount, donor, message, anonymous: anon },
       });
-      setTxHash(result.txHash);
-      onDonated(result.raised, result.donors);
-      setStep("success");
-      confetti({
-        particleCount: 120,
-        spread: 90,
-        origin: { y: 0.4 },
-        colors: ["#14E0C4", "#F2B84B", "#ffffff"],
+      const witnessCbor = await signTxWitness(connected.api, unsignedTxCbor);
+      const { txHash: hash } = await submitDonationTx({
+        data: { slug: projectSlug, unsignedTxCbor, witnessCbor, amount, amountLovelace, donor, message, anonymous: anon },
       });
+
+      setTxHash(hash);
+      setStep("pending");
+      startPolling(hash);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Wallet connection failed. Please try again.");
+      console.error("Donation failed:", err);
+      const msg = err instanceof Error ? err.message : "Wallet connection failed. Please try again.";
+      setError(msg);
+      toast.error(msg);
       setStep("wallet");
     } finally {
       setConnecting(null);
@@ -527,8 +587,31 @@ function DonateDialog({
             <div className="pulse-ring mx-auto grid h-16 w-16 place-items-center rounded-full bg-teal-gradient">
               <Wallet className="h-7 w-7 text-navy-deep" />
             </div>
-            <h3 className="mt-6 font-display text-xl font-bold">Recording your donation...</h3>
-            <p className="mt-2 text-sm text-muted-foreground">Wallet connected. Saving to the platform ledger.</p>
+            <h3 className="mt-6 font-display text-xl font-bold">Building your donation...</h3>
+            <p className="mt-2 text-sm text-muted-foreground">Approve the transaction in your wallet popup.</p>
+          </div>
+        )}
+        {step === "pending" && (
+          <div className="py-10 text-center">
+            <div className="pulse-ring mx-auto grid h-16 w-16 place-items-center rounded-full bg-teal-gradient">
+              <Wallet className="h-7 w-7 text-navy-deep" />
+            </div>
+            <h3 className="mt-6 font-display text-xl font-bold">Confirming on-chain...</h3>
+            <p className="mt-2 text-sm text-muted-foreground">Your transaction was submitted — waiting for Cardano to confirm it.</p>
+            <a href={`${EXPLORER_TX_URL}${txHash}`} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1 font-mono text-xs text-teal hover:underline">
+              {shortHash(txHash)} <ExternalLink className="h-3 w-3" />
+            </a>
+            {error && <p className="mt-3 text-xs text-amber-600">{error}</p>}
+          </div>
+        )}
+        {step === "failed" && (
+          <div className="py-10 text-center">
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-red-500/10 text-red-600">✕</div>
+            <h3 className="mt-6 font-display text-xl font-bold">Donation failed verification</h3>
+            <p className="mt-2 text-sm text-muted-foreground">The transaction didn&apos;t pay the treasury address with a valid donation tag — contact support if this seems wrong.</p>
+            <DialogFooter className="mt-6">
+              <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)}>Close</Button>
+            </DialogFooter>
           </div>
         )}
         {step === "success" && (
@@ -553,10 +636,10 @@ function DonateDialog({
               </div>
             )}
             <div className="mt-3 rounded-xl border border-border bg-muted/40 p-4 text-left text-xs">
-              <div className="text-muted-foreground">Platform Record ID</div>
+              <div className="text-muted-foreground">Cardano Transaction</div>
               <div className="mt-1 flex items-center justify-between gap-2">
                 <span className="truncate font-mono">{shortHash(txHash)}</span>
-                <a href="#" className="inline-flex flex-none items-center gap-1 font-semibold text-teal hover:underline">
+                <a href={`${EXPLORER_TX_URL}${txHash}`} target="_blank" rel="noreferrer" className="inline-flex flex-none items-center gap-1 font-semibold text-teal hover:underline">
                   Explorer <ExternalLink className="h-3 w-3" />
                 </a>
               </div>

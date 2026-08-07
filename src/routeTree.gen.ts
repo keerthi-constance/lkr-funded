@@ -31,6 +31,7 @@ import { Route as DashboardStudentUpdatesRouteImport } from './routes/dashboard.
 import { Route as DashboardStudentSubmitRouteImport } from './routes/dashboard.student.submit'
 import { Route as DashboardStudentMilestonesRouteImport } from './routes/dashboard.student.milestones'
 import { Route as DashboardDonorWatchlistRouteImport } from './routes/dashboard.donor.watchlist'
+import { Route as DashboardDonorWalletRouteImport } from './routes/dashboard.donor.wallet'
 import { Route as DashboardDonorProfileRouteImport } from './routes/dashboard.donor.profile'
 import { Route as DashboardDonorDonationsRouteImport } from './routes/dashboard.donor.donations'
 import { Route as DashboardAdminSettingsRouteImport } from './routes/dashboard.admin.settings'
@@ -155,6 +156,11 @@ const DashboardDonorWatchlistRoute = DashboardDonorWatchlistRouteImport.update({
   path: '/donor/watchlist',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardDonorWalletRoute = DashboardDonorWalletRouteImport.update({
+  id: '/donor/wallet',
+  path: '/donor/wallet',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardDonorProfileRoute = DashboardDonorProfileRouteImport.update({
   id: '/donor/profile',
   path: '/donor/profile',
@@ -208,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
   '/dashboard/donor/donations': typeof DashboardDonorDonationsRoute
   '/dashboard/donor/profile': typeof DashboardDonorProfileRoute
+  '/dashboard/donor/wallet': typeof DashboardDonorWalletRoute
   '/dashboard/donor/watchlist': typeof DashboardDonorWatchlistRoute
   '/dashboard/student/milestones': typeof DashboardStudentMilestonesRoute
   '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
@@ -239,6 +246,7 @@ export interface FileRoutesByTo {
   '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
   '/dashboard/donor/donations': typeof DashboardDonorDonationsRoute
   '/dashboard/donor/profile': typeof DashboardDonorProfileRoute
+  '/dashboard/donor/wallet': typeof DashboardDonorWalletRoute
   '/dashboard/donor/watchlist': typeof DashboardDonorWatchlistRoute
   '/dashboard/student/milestones': typeof DashboardStudentMilestonesRoute
   '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
@@ -271,6 +279,7 @@ export interface FileRoutesById {
   '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
   '/dashboard/donor/donations': typeof DashboardDonorDonationsRoute
   '/dashboard/donor/profile': typeof DashboardDonorProfileRoute
+  '/dashboard/donor/wallet': typeof DashboardDonorWalletRoute
   '/dashboard/donor/watchlist': typeof DashboardDonorWatchlistRoute
   '/dashboard/student/milestones': typeof DashboardStudentMilestonesRoute
   '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
@@ -304,6 +313,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/settings'
     | '/dashboard/donor/donations'
     | '/dashboard/donor/profile'
+    | '/dashboard/donor/wallet'
     | '/dashboard/donor/watchlist'
     | '/dashboard/student/milestones'
     | '/dashboard/student/submit'
@@ -335,6 +345,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/settings'
     | '/dashboard/donor/donations'
     | '/dashboard/donor/profile'
+    | '/dashboard/donor/wallet'
     | '/dashboard/donor/watchlist'
     | '/dashboard/student/milestones'
     | '/dashboard/student/submit'
@@ -366,6 +377,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/settings'
     | '/dashboard/donor/donations'
     | '/dashboard/donor/profile'
+    | '/dashboard/donor/wallet'
     | '/dashboard/donor/watchlist'
     | '/dashboard/student/milestones'
     | '/dashboard/student/submit'
@@ -549,6 +561,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardDonorWatchlistRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/donor/wallet': {
+      id: '/dashboard/donor/wallet'
+      path: '/donor/wallet'
+      fullPath: '/dashboard/donor/wallet'
+      preLoaderRoute: typeof DashboardDonorWalletRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/donor/profile': {
       id: '/dashboard/donor/profile'
       path: '/donor/profile'
@@ -609,6 +628,7 @@ interface DashboardRouteChildren {
   DashboardAdminSettingsRoute: typeof DashboardAdminSettingsRoute
   DashboardDonorDonationsRoute: typeof DashboardDonorDonationsRoute
   DashboardDonorProfileRoute: typeof DashboardDonorProfileRoute
+  DashboardDonorWalletRoute: typeof DashboardDonorWalletRoute
   DashboardDonorWatchlistRoute: typeof DashboardDonorWatchlistRoute
   DashboardStudentMilestonesRoute: typeof DashboardStudentMilestonesRoute
   DashboardStudentSubmitRoute: typeof DashboardStudentSubmitRoute
@@ -632,6 +652,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAdminSettingsRoute: DashboardAdminSettingsRoute,
   DashboardDonorDonationsRoute: DashboardDonorDonationsRoute,
   DashboardDonorProfileRoute: DashboardDonorProfileRoute,
+  DashboardDonorWalletRoute: DashboardDonorWalletRoute,
   DashboardDonorWatchlistRoute: DashboardDonorWatchlistRoute,
   DashboardStudentMilestonesRoute: DashboardStudentMilestonesRoute,
   DashboardStudentSubmitRoute: DashboardStudentSubmitRoute,

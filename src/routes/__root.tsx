@@ -104,11 +104,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <head>
+    // The dev-only component tagger and browser extensions both mutate the shell
+    // elements before hydration; suppress the resulting attribute-mismatch warnings.
+    <html lang="en" suppressHydrationWarning>
+      <head suppressHydrationWarning>
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Scripts />
       </body>

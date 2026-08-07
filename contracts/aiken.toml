@@ -1,0 +1,10 @@
+name = "funded/contracts"
+version = "0.1.0"
+compiler = "v1.1.23"
+plutus = "v3"
+license = "Apache-2.0"
+description = "FundEd escrow + EDUF reward-token minting policy (Cardano Preprod)"
+
+dependencies = [
+  { name = "aiken-lang/stdlib", version = "v2.1.0", source = "github" },
+]

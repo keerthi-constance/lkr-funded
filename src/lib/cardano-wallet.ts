@@ -1,22 +1,23 @@
-// Client-only, dependency-free CIP-30 connector for real Cardano browser
-// wallets (Nami, Eternl, Lace). No SDK — just the raw window.cardano API,
+// Client-only, dependency-free CIP-30 connector for the real Eternl
+// Cardano browser wallet. No SDK — just the raw window.cardano API,
 // a minimal CBOR-uint decoder for getBalance(), and a bech32 encoder for
 // turning the raw address bytes CIP-30 returns into a normal "addr1..."
 // string. Kept dependency-free so it never leaks into the SSR/server bundle.
 
-export const SUPPORTED_WALLETS = ["nami", "eternl", "lace"] as const;
+export const SUPPORTED_WALLETS = ["eternl"] as const;
 export type WalletKey = (typeof SUPPORTED_WALLETS)[number];
 
 export const WALLET_LABELS: Record<WalletKey, { name: string; desc: string }> = {
-  nami: { name: "Nami", desc: "Popular Cardano browser wallet" },
   eternl: { name: "Eternl", desc: "Feature-rich multi-account wallet" },
-  lace: { name: "Lace", desc: "Official IOG wallet" },
 };
 
-type Cip30Api = {
+export type Cip30Api = {
   getChangeAddress: () => Promise<string>;
   getUsedAddresses: () => Promise<string[]>;
   getBalance: () => Promise<string>;
+  getUtxos: () => Promise<string[] | undefined>;
+  signTx: (txCbor: string, partialSign?: boolean) => Promise<string>;
+  submitTx: (signedTxCbor: string) => Promise<string>;
 };
 
 type Cip30Wallet = { enable: () => Promise<Cip30Api> };
@@ -32,6 +33,9 @@ export type ConnectedWallet = {
   key: WalletKey;
   address: string;
   balanceAda: number;
+  // Raw CIP-30 api, only present for a real (non-mock) connection. Used to
+  // sign/submit deposit transactions built server-side — never leaves the browser.
+  api?: Cip30Api;
 };
 
 // --- hex helpers ---
@@ -123,18 +127,80 @@ function bytesToBech32Address(bytes: Uint8Array): string {
   return hrp + "1" + [...data, ...bech32CreateChecksum(hrp, data)].map((d) => BECH32_CHARSET[d]).join("");
 }
 
-export async function connectWallet(key: WalletKey): Promise<ConnectedWallet> {
+function describeWalletError(err: unknown, walletName: string): string {
+  const raw = err instanceof Error ? err.message : "";
+  if (raw && /timed?\s*out/i.test(raw)) {
+    return `${walletName} didn't respond in time. Open the ${walletName} extension icon, make sure it's unlocked, then click ${walletName} here again.`;
+  }
+  if (raw) return raw;
+  if (err && typeof err === "object") {
+    const e = err as { code?: number; info?: string; message?: string };
+    if (e.code === -3) return `Connection to ${walletName} was refused. Approve the connection request in the wallet popup.`;
+    if (e.info) return e.info;
+    if (e.message) return e.message;
+  }
+  return `Could not connect to ${walletName}. Make sure the extension is unlocked and try again.`;
+}
+
+// Toggle this to switch between a real CIP-30 connection and a simulated
+// one. Mock mode needs no browser extension installed at all — useful for
+// demos/thesis defenses where installing a wallet isn't practical. Flip to
+// false once a real Eternl wallet is available to connect to.
+const MOCK_MODE = false;
+
+function randomHex(bytes: number): string {
+  let out = "";
+  for (let i = 0; i < bytes; i++) out += Math.floor(Math.random() * 16).toString(16);
+  return out;
+}
+
+async function connectWalletMock(key: WalletKey): Promise<ConnectedWallet> {
+  await new Promise((resolve) => setTimeout(resolve, 1400));
+  const address = "addr1" + randomHex(58);
+  const balanceAda = Math.round((500 + Math.random() * 5000) * 100) / 100;
+  return { key, address, balanceAda };
+}
+
+async function connectWalletReal(key: WalletKey): Promise<ConnectedWallet> {
   const cardano = (window as unknown as { cardano?: Record<string, Cip30Wallet> }).cardano;
   const provider = cardano?.[key];
-  if (!provider) throw new Error(`${WALLET_LABELS[key].name} extension not found.`);
+  const walletName = WALLET_LABELS[key].name;
+  if (!provider) {
+    throw new Error(
+      `${walletName} extension not found in this browser. Install it from the ${walletName} website, then reload this page.`
+    );
+  }
 
-  const api = await provider.enable();
-  const addresses = await api.getUsedAddresses();
-  const changeAddress = addresses[0] ?? (await api.getChangeAddress());
-  const balanceHex = await api.getBalance();
+  let api: Cip30Api;
+  try {
+    api = await provider.enable();
+  } catch (err) {
+    throw new Error(describeWalletError(err, walletName));
+  }
 
-  const lovelace = parseLovelaceFromBalanceCbor(balanceHex);
-  const address = bytesToBech32Address(hexToBytes(changeAddress));
+  try {
+    const addresses = await api.getUsedAddresses();
+    const changeAddress = addresses[0] ?? (await api.getChangeAddress());
+    const balanceHex = await api.getBalance();
 
-  return { key, address, balanceAda: Number(lovelace) / 1_000_000 };
+    const lovelace = parseLovelaceFromBalanceCbor(balanceHex);
+    const address = bytesToBech32Address(hexToBytes(changeAddress));
+
+    return { key, address, balanceAda: Number(lovelace) / 1_000_000, api };
+  } catch (err) {
+    throw new Error(`Connected to ${walletName}, but couldn't read the wallet address/balance: ${describeWalletError(err, walletName)}`);
+  }
+}
+
+export async function connectWallet(key: WalletKey): Promise<ConnectedWallet> {
+  return MOCK_MODE ? connectWalletMock(key) : connectWalletReal(key);
+}
+
+// CIP-30's signTx always returns just a witness set (per spec), never a fully
+// assembled tx — it must be combined with the original tx body before
+// submission. We hand that witness back to the server (which already built
+// the unsigned tx and holds a provider connection) to assemble + submit,
+// rather than reassembling a Cardano tx client-side.
+export async function signTxWitness(api: Cip30Api, unsignedTxCbor: string): Promise<string> {
+  return api.signTx(unsignedTxCbor, true);
 }
