@@ -108,7 +108,12 @@ export const getRecentDonations = createServerFn({ method: "GET" }).handler(asyn
 // Contract" panel donors see before committing. No auth — everything here is
 // already visible on-chain to anyone who looks at a donation transaction.
 export const getContractInfo = createServerFn({ method: "GET" }).handler(async () => {
-  return serialize(await getContractSummary());
+  try {
+    return serialize(await getContractSummary());
+  } catch (err) {
+    console.error("[getContractInfo] TEMP DEBUG — unexpected throw:", err);
+    throw err;
+  }
 });
 
 const buildDonationInput = z.object({
