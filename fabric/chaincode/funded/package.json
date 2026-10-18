@@ -1,0 +1,19 @@
+{
+  "name": "funded-chaincode",
+  "version": "1.0.0",
+  "description": "FundEd audit-trail chaincode: campaigns, contributions, milestone evidence/approval, and disbursement authorisation.",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "fabric-chaincode-node start"
+  },
+  "dependencies": {
+    "fabric-contract-api": "^2.5.4",
+    "fabric-shim": "^2.5.4"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "1.14.4"
+  }
+}

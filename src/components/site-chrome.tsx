@@ -107,7 +107,7 @@ export function SiteFooter() {
               <span className="font-display text-xl font-bold text-white">FundEd</span>
             </div>
             <p className="mt-3 text-sm text-white/60">
-              Transparent, milestone-based research funding secured by the Cardano blockchain.
+              Transparent, milestone-based research funding, paid in LKR and verified on a permissioned ledger.
             </p>
           </div>
           <div>
@@ -132,13 +132,12 @@ export function SiteFooter() {
             <ul className="mt-3 space-y-2 text-sm">
               <li><a href="#" className="hover:text-teal">FAQ</a></li>
               <li><a href="#" className="hover:text-teal">Contact</a></li>
-              <li><a href="#" className="hover:text-teal">Cardano Explorer</a></li>
               <li><a href="#" className="hover:text-teal">Terms & Privacy</a></li>
             </ul>
           </div>
         </div>
         <div className="mt-10 border-t border-white/10 pt-6 text-xs text-white/50">
-          © {new Date().getFullYear()} FundEd. Built on Cardano. Undergraduate research thesis project.
+          © {new Date().getFullYear()} FundEd. Undergraduate research thesis project.
         </div>
       </div>
     </footer>

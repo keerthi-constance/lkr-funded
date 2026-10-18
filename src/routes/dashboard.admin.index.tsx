@@ -6,7 +6,7 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { StatCard } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
 import { Coins, TrendingUp, Users, ShieldCheck, ExternalLink } from "lucide-react";
-import { formatRs, platformStats, recentDonations, shortHash, toAda } from "@/lib/mock-data";
+import { formatRs, platformStats, recentDonations, shortHash } from "@/lib/mock-data";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, BarChart, Bar } from "recharts";
 
 export const Route = createFileRoute("/dashboard/admin/")({
@@ -35,10 +35,10 @@ function AdminHome() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Total Raised" value={formatRs(platformStats.totalRaised)} hint={`≈ ${toAda(platformStats.totalRaised)} ADA`} icon={Coins} />
+          <StatCard label="Total Raised" value={formatRs(platformStats.totalRaised)} hint="Across all live campaigns" icon={Coins} />
           <StatCard label="Commission (2%)" value={formatRs(platformStats.commission)} hint="Available to withdraw" icon={TrendingUp} accent="gold" />
           <StatCard label="Active Projects" value={platformStats.activeProjects.toString()} hint="Live campaigns" icon={ShieldCheck} />
-          <StatCard label="Total Donors" value={platformStats.donors.toString()} hint="Unique wallets" icon={Users} accent="navy" />
+          <StatCard label="Total Donors" value={platformStats.donors.toString()} hint="Unique donors" icon={Users} accent="navy" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -91,7 +91,7 @@ function ReleaseCenter() {
   const release = (id: number) => {
     setPending(pending.filter((p) => p.id !== id));
     confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 }, colors: ["#14E0C4", "#F2B84B"] });
-    toast.success("Funds released on-chain. Tx: tx_9f3c...c3b8");
+    toast.success("Funds released. Ledger ref: fundEd_9f3c...c3b8");
   };
   return (
     <div className="rounded-2xl border border-border bg-card p-6">
@@ -151,7 +151,7 @@ function LedgerTable() {
                 <td className="py-3 font-medium">{d.donor}</td>
                 <td className="py-3 max-w-xs truncate text-muted-foreground">{d.project}</td>
                 <td className="py-3 text-right font-semibold">{formatRs(d.amount)}</td>
-                <td className="py-3 pl-3"><a className="inline-flex items-center gap-1 font-mono text-xs text-teal hover:underline" href="#">{shortHash(d.txHash)} <ExternalLink className="h-3 w-3" /></a></td>
+                <td className="py-3 pl-3"><a className="inline-flex items-center gap-1 font-mono text-xs text-teal hover:underline" href="#">{shortHash(d.payhereOrderId)} <ExternalLink className="h-3 w-3" /></a></td>
                 <td className="py-3 text-right text-xs text-muted-foreground">{d.date}</td>
               </tr>
             ))}

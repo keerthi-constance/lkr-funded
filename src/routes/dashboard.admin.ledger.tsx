@@ -23,9 +23,9 @@ function LedgerPage() {
   );
 
   const exportCsv = () => {
-    const header = "Donor,Project,Amount,Date,TxHash,Commission\n";
+    const header = "Donor,Project,Amount,Date,OrderId,Commission\n";
     const rows = filtered
-      .map((d) => `"${d.donor}","${d.project}",${d.amount},${d.date},${d.txHash},${Math.round(d.amount * 0.02)}`)
+      .map((d) => `"${d.donor}","${d.project}",${d.amount},${d.date},${d.payhereOrderId},${Math.round(d.amount * 0.02)}`)
       .join("\n");
     const blob = new Blob([header + rows], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -61,7 +61,7 @@ function LedgerPage() {
                 <th className="p-4 text-left">Project</th>
                 <th className="p-4 text-right">Amount</th>
                 <th className="p-4 text-right">Commission</th>
-                <th className="p-4 text-left">Tx Hash</th>
+                <th className="p-4 text-left">Order ID</th>
                 <th className="p-4 text-right">Date</th>
               </tr>
             </thead>
@@ -72,7 +72,7 @@ function LedgerPage() {
                   <td className="p-4 max-w-xs truncate text-muted-foreground">{d.project}</td>
                   <td className="p-4 text-right font-semibold">{formatRs(d.amount)}</td>
                   <td className="p-4 text-right text-muted-foreground">{formatRs(Math.round(d.amount * 0.02))}</td>
-                  <td className="p-4"><a className="inline-flex items-center gap-1 font-mono text-xs text-teal hover:underline" href="#">{shortHash(d.txHash)} <ExternalLink className="h-3 w-3" /></a></td>
+                  <td className="p-4"><a className="inline-flex items-center gap-1 font-mono text-xs text-teal hover:underline" href="#">{shortHash(d.payhereOrderId)} <ExternalLink className="h-3 w-3" /></a></td>
                   <td className="p-4 text-right text-xs text-muted-foreground">{d.date}</td>
                 </tr>
               ))}

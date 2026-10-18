@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { CheckCircle2, Clock, FileText, Lock, Upload, ExternalLink } from "lucide-react";
+import { CheckCircle2, Clock, FileText, FolderPlus, Lock, Upload } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,9 +15,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { projects, formatRs, shortHash, type MilestoneStatus } from "@/lib/mock-data";
+import { formatRs, shortHash, type MilestoneStatus } from "@/lib/mock-data";
+import { getMyProject } from "@/backend/functions";
 
 export const Route = createFileRoute("/dashboard/student/milestones")({
+  loader: async () => ({ project: await getMyProject() }),
   component: MilestonesPage,
 });
 
@@ -30,13 +32,38 @@ const statusStyles: Record<MilestoneStatus, { color: string; label: string; icon
 };
 
 function MilestonesPage() {
-  const project = projects[0];
-  const [milestones, setMilestones] = useState(project.milestones);
+  const { project } = Route.useLoaderData();
+  const [milestones, setMilestones] = useState(project?.milestones ?? []);
   const [evidenceOpen, setEvidenceOpen] = useState<string | null>(null);
   const [report, setReport] = useState("");
   const [cosign, setCosign] = useState("");
 
+  if (!project) {
+    return (
+      <DashboardShell role="student">
+        <div className="mx-auto flex max-w-md flex-col items-center rounded-2xl border border-dashed border-border bg-card p-10 text-center">
+          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-teal/15 text-teal">
+            <FolderPlus className="h-6 w-6" />
+          </div>
+          <h2 className="mt-4 font-display text-xl font-bold">No project yet</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Submit your research project first — milestones are defined as part of that submission.
+          </p>
+          <Link to="/dashboard/student/submit">
+            <Button className="mt-5 bg-teal-gradient text-navy-deep">Submit Your Project</Button>
+          </Link>
+        </div>
+      </DashboardShell>
+    );
+  }
+
   const activeMilestone = milestones.find((m) => m.id === evidenceOpen);
+
+  // Demo eligibility gate: a student whose project has raised at least 30% of
+  // its goal may apply for milestones and request funds.
+  const FUNDING_THRESHOLD_PERCENT = 30;
+  const raisedPercent = Math.round((project.raised / project.goal) * 100);
+  const thresholdMet = raisedPercent >= FUNDING_THRESHOLD_PERCENT;
 
   const submitEvidence = () => {
     setMilestones((prev) =>
@@ -54,6 +81,33 @@ function MilestonesPage() {
         <div>
           <h1 className="font-display text-2xl font-bold">Milestone Management</h1>
           <p className="text-muted-foreground">{project.title}</p>
+        </div>
+
+        <div
+          className={`rounded-2xl border p-4 ${
+            thresholdMet ? "border-teal/40 bg-teal/10" : "border-border bg-muted/30"
+          }`}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-sm font-semibold">
+              {raisedPercent}% of goal raised
+              {thresholdMet && (
+                <span className="ml-2 font-normal text-teal">
+                  — funding threshold met ({FUNDING_THRESHOLD_PERCENT}% required)
+                </span>
+              )}
+            </div>
+            <Badge variant="outline" className={thresholdMet ? "border-teal/40 text-teal" : ""}>
+              {thresholdMet
+                ? "Milestone applications open"
+                : `Threshold: ${FUNDING_THRESHOLD_PERCENT}%`}
+            </Badge>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {thresholdMet
+              ? "Your project has raised enough to apply for the next milestone. Submit your evidence below to request the funds."
+              : `Raise ${FUNDING_THRESHOLD_PERCENT}% of your goal to unlock milestone applications and fund requests.`}
+          </p>
         </div>
 
         <div className="space-y-4">
@@ -87,10 +141,10 @@ function MilestonesPage() {
                         <span>Target: {new Date(m.targetDate).toLocaleDateString()}</span>
                         <span>Evidence: {m.evidenceType}</span>
                       </div>
-                      {m.txHash && (
-                        <a href="#" className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-teal hover:underline">
-                          <ExternalLink className="h-3 w-3" /> tx: {shortHash(m.txHash)}
-                        </a>
+                      {m.ledgerTxId && (
+                        <span className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-teal">
+                          ledger ref: {shortHash(m.ledgerTxId)}
+                        </span>
                       )}
                     </div>
                   </div>

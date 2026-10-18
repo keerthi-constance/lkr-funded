@@ -1,9 +1,10 @@
-import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
+import { getCurrentUser, logout } from "@/backend/auth-functions";
 import {
   LayoutDashboard,
   FolderKanban,
-  Wallet,
   Bell,
   Settings,
   LogOut,
@@ -19,6 +20,7 @@ import {
   BarChart3,
   BookOpen,
   Search,
+  Gavel,
 } from "lucide-react";
 
 type NavItem = { to: string; label: string; icon: any };
@@ -31,7 +33,6 @@ const navs: Record<string, { title: string; badge: string; items: NavItem[] }> =
       { to: "/dashboard/student", label: "Overview", icon: LayoutDashboard },
       { to: "/dashboard/student/submit", label: "Submit Project", icon: FolderKanban },
       { to: "/dashboard/student/milestones", label: "Milestones", icon: ClipboardCheck },
-      { to: "/dashboard/student/wallet", label: "Wallet", icon: Wallet },
       { to: "/dashboard/student/updates", label: "Updates", icon: Bell },
     ],
   },
@@ -53,6 +54,7 @@ const navs: Record<string, { title: string; badge: string; items: NavItem[] }> =
       { to: "/dashboard/admin", label: "Overview", icon: LayoutDashboard },
       { to: "/dashboard/admin/approvals", label: "Final Approvals", icon: FileCheck2 },
       { to: "/dashboard/admin/releases", label: "Fund Releases", icon: Coins },
+      { to: "/dashboard/admin/auctions", label: "Auctions", icon: Gavel },
       { to: "/dashboard/admin/ledger", label: "Ledger", icon: BookOpen },
       { to: "/dashboard/admin/disputes", label: "Disputes", icon: Flag },
       { to: "/dashboard/admin/settings", label: "Settings", icon: Settings },
@@ -64,7 +66,6 @@ const navs: Record<string, { title: string; badge: string; items: NavItem[] }> =
     items: [
       { to: "/dashboard/donor", label: "Impact", icon: Heart },
       { to: "/dashboard/donor/donations", label: "My Donations", icon: Coins },
-      { to: "/dashboard/donor/wallet", label: "Wallet", icon: Wallet },
       { to: "/dashboard/donor/watchlist", label: "Watchlist", icon: Bell },
       { to: "/dashboard/donor/profile", label: "Profile", icon: Settings },
     ],
@@ -82,6 +83,13 @@ export function DashboardShell({ role, children }: { role: keyof typeof navs; ch
   const cfg = navs[role];
   const RoleIcon = roleIcons[role as keyof typeof roleIcons];
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const { data: currentUser } = useQuery({ queryKey: ["current-user"], queryFn: getCurrentUser });
+
+  const signOut = async () => {
+    await logout();
+    navigate({ to: "/" });
+  };
 
   return (
     <div className="flex min-h-screen bg-surface">
@@ -99,9 +107,13 @@ export function DashboardShell({ role, children }: { role: keyof typeof navs; ch
             <div className="grid h-8 w-8 place-items-center rounded-lg bg-teal/20 text-teal">
               <RoleIcon className="h-4 w-4" />
             </div>
-            <div>
-              <div className="text-xs uppercase tracking-wider text-white/50">Role</div>
-              <div className="text-sm font-semibold text-white">{cfg.badge}</div>
+            <div className="min-w-0">
+              <div className="truncate text-sm font-semibold text-white">
+                {currentUser?.displayName ?? cfg.badge}
+              </div>
+              <div className="text-xs uppercase tracking-wider text-white/50">
+                {cfg.badge} · @{currentUser?.username}
+              </div>
             </div>
           </div>
         </div>
@@ -127,13 +139,14 @@ export function DashboardShell({ role, children }: { role: keyof typeof navs; ch
         </nav>
 
         <div className="border-t border-sidebar-border p-3">
-          <Link
-            to="/"
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-sidebar-accent hover:text-white"
+          <button
+            type="button"
+            onClick={signOut}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 hover:bg-sidebar-accent hover:text-white"
           >
             <LogOut className="h-4 w-4" />
-            Exit dashboard
-          </Link>
+            Sign out
+          </button>
         </div>
       </aside>
 

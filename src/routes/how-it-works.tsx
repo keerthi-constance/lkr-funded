@@ -7,7 +7,7 @@ export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
       { title: "How It Works — FundEd" },
-      { name: "description", content: "Learn how milestone-based blockchain funding works on FundEd." },
+      { name: "description", content: "Learn how milestone-based research funding works on FundEd." },
     ],
   }),
   component: HowItWorks,
@@ -17,7 +17,7 @@ const steps = [
   { icon: GraduationCap, title: "1. Student Submits", body: "A final-year student submits a research proposal, budget, and 3 concrete milestones through their university-verified account." },
   { icon: Building2, title: "2. University Verifies", body: "The student's university checks authenticity, feasibility, and supervisor sign-off. Approved projects move to platform review." },
   { icon: ShieldCheck, title: "3. Admin Publishes", body: "The FundEd authority performs a final review and publishes the project. It's now live on the marketplace." },
-  { icon: Coins, title: "4. Donors Fund by Milestone", body: "Donors contribute in ADA. Funds are held in a smart-contract escrow and released only when each milestone is verified by both university and platform." },
+  { icon: Coins, title: "4. Donors Fund by Milestone", body: "Donors contribute in LKR via PayHere. Funds are released only when each milestone is verified by both university and platform." },
 ];
 
 function HowItWorks() {
@@ -28,7 +28,7 @@ function HowItWorks() {
         <FadeIn>
           <h1 className="font-display text-4xl font-bold sm:text-5xl">How FundEd works</h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Four verified steps between an idea and a fully funded piece of research — all recorded immutably on the Cardano blockchain.
+            Four verified steps between an idea and a fully funded piece of research — every milestone recorded on a permissioned ledger.
           </p>
         </FadeIn>
         <div className="mt-12 space-y-4">

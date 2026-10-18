@@ -2,22 +2,31 @@ import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-r
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 
 import { getProjects, getPlatformStats, getUniversities } from "@/backend/functions";
+import { getUpcomingAuctions, type UpcomingAuction } from "@/backend/auction-functions";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
-    const [projects, platformStats, universities] = await Promise.all([
+    const [projects, platformStats, universities, auctions] = await Promise.all([
       getProjects(),
       getPlatformStats(),
       getUniversities(),
+      getUpcomingAuctions(),
     ]);
-    return { projects, platformStats, universities };
+    return { projects, platformStats, universities, auctions };
   },
   component: LandingLayout,
 });
 
 function LandingLayout() {
-  const { projects, platformStats, universities } = Route.useLoaderData();
-  return <Landing projects={projects} platformStats={platformStats} universities={universities} />;
+  const { projects, platformStats, universities, auctions } = Route.useLoaderData();
+  return (
+    <Landing
+      projects={projects}
+      platformStats={platformStats}
+      universities={universities}
+      auctions={auctions}
+    />
+  );
 }
 
 import { motion } from "framer-motion";
@@ -26,16 +35,19 @@ import { Button } from "@/components/ui/button";
 import { NodeNetwork } from "@/components/node-network";
 import { CountUp, FadeIn } from "@/components/motion-primitives";
 import { ProjectCard } from "@/components/project-card";
+import { AuctionSection } from "@/components/auction-section";
 import type { Project } from "@/lib/mock-data";
 
 function Landing({
   projects,
   platformStats,
   universities,
+  auctions,
 }: {
   projects: Project[];
   platformStats: { totalRaised: number; activeProjects: number; universities: number; milestonesCompleted: number; donors: number };
   universities: { name: string; short: string; logo: string }[];
+  auctions: UpcomingAuction[];
 }) {
   return (
     <>
@@ -53,7 +65,7 @@ function Landing({
               className="mx-auto max-w-3xl text-center"
             >
               <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-medium text-teal backdrop-blur">
-                <Sparkles className="h-3.5 w-3.5" /> Powered by the Cardano blockchain
+                <Sparkles className="h-3.5 w-3.5" /> Verified milestones, transparent ledger
               </div>
               <h1 className="mt-6 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
                 Fund the next generation of{" "}
@@ -61,7 +73,7 @@ function Landing({
               </h1>
               <p className="mx-auto mt-6 max-w-2xl text-base text-white/70 sm:text-lg">
                 Transparent, milestone-based crowdfunding for final-year research. Every rupee is
-                verified on-chain — released only when work is delivered.
+                verified on the ledger — released only when work is delivered.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <Link to="/browse">
@@ -101,6 +113,8 @@ function Landing({
           </div>
         </section>
 
+        <AuctionSection auctions={auctions} />
+
         {/* HOW IT WORKS */}
         <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
           <FadeIn className="mx-auto max-w-2xl text-center">
@@ -112,7 +126,7 @@ function Landing({
             </h2>
             <p className="mt-3 text-muted-foreground">
               From submission to funded — every stage is verified by a real institution and
-              recorded on the Cardano blockchain.
+              recorded on FundEd's permissioned ledger.
             </p>
           </FadeIn>
 
@@ -122,7 +136,7 @@ function Landing({
               { icon: GraduationCap, title: "Student Submits", desc: "Research proposal, budget, and 3 milestones." },
               { icon: Building2, title: "University Verifies", desc: "Faculty confirms authenticity and feasibility." },
               { icon: ShieldCheck, title: "Admin Publishes", desc: "Platform authority approves and lists the project." },
-              { icon: Coins, title: "Donors Fund by Milestone", desc: "Funds locked on-chain, released as work is verified." },
+              { icon: Coins, title: "Donors Fund by Milestone", desc: "Funds held by the platform, released as work is verified." },
             ].map((s, i) => (
               <FadeIn key={s.title} delay={i * 0.1}>
                 <div className="relative rounded-2xl border border-border bg-card p-6 shadow-card">
@@ -140,14 +154,14 @@ function Landing({
           </div>
         </section>
 
-        {/* WHY BLOCKCHAIN */}
+        {/* WHY A LEDGER */}
         <section className="bg-navy-deep py-24 text-white">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <FadeIn className="mx-auto max-w-2xl text-center">
               <div className="inline-flex items-center gap-2 rounded-full bg-teal/15 px-3 py-1 text-xs font-semibold text-teal">
                 Trust & Transparency
               </div>
-              <h2 className="mt-4 font-display text-3xl font-bold sm:text-4xl">Why blockchain?</h2>
+              <h2 className="mt-4 font-display text-3xl font-bold sm:text-4xl">Why a permissioned ledger?</h2>
               <p className="mt-3 text-white/60">
                 Three guarantees traditional crowdfunding cannot provide.
               </p>
@@ -155,9 +169,9 @@ function Landing({
 
             <div className="mt-14 grid gap-6 md:grid-cols-3">
               {[
-                { icon: Lock, title: "Milestone-Locked Funds", desc: "Donations sit in a smart-contract escrow. Funds unlock only when a milestone is verified." },
-                { icon: ShieldCheck, title: "Immutable Records", desc: "Every submission, verification, and release is written to the Cardano ledger. Nothing can be edited later." },
-                { icon: Eye, title: "Full Public Audit", desc: "Anyone can trace every rupee from donor wallet to student wallet in real time." },
+                { icon: Lock, title: "Milestone-Locked Funds", desc: "Donations are held by the platform. Funds are released only when a milestone is verified." },
+                { icon: ShieldCheck, title: "Immutable Records", desc: "Every submission, verification, and release is written to FundEd's permissioned ledger. Nothing can be edited later." },
+                { icon: Eye, title: "Full Public Audit", desc: "Anyone can trace every rupee from donor to student in real time." },
               ].map((s, i) => (
                 <FadeIn key={s.title} delay={i * 0.1}>
                   <div className="glass-card rounded-2xl p-7">
@@ -226,7 +240,7 @@ function Landing({
               </div>
               <p className="font-display text-xl italic leading-relaxed text-foreground sm:text-2xl">
                 "FundEd didn't just fund my thesis — it gave 234 strangers a stake in it.
-                Watching each milestone verify on-chain built the accountability I needed to
+                Watching each milestone get verified built the accountability I needed to
                 actually finish."
               </p>
               <div className="mt-6 flex items-center gap-3">

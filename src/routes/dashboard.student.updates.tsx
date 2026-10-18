@@ -1,15 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { MessageCircle, Send, ImagePlus } from "lucide-react";
+import { FolderPlus, MessageCircle, Send, ImagePlus } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { projects } from "@/lib/mock-data";
+import { getMyProject } from "@/backend/functions";
 
 export const Route = createFileRoute("/dashboard/student/updates")({
+  loader: async () => ({ project: await getMyProject() }),
   component: UpdatesPage,
 });
 
@@ -19,12 +20,31 @@ const initialComments = [
 ];
 
 function UpdatesPage() {
-  const project = projects[0];
-  const [updates, setUpdates] = useState(project.updates);
+  const { project } = Route.useLoaderData();
+  const [updates, setUpdates] = useState(project?.updates ?? []);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [comments, setComments] = useState(initialComments);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+
+  if (!project) {
+    return (
+      <DashboardShell role="student">
+        <div className="mx-auto flex max-w-md flex-col items-center rounded-2xl border border-dashed border-border bg-card p-10 text-center">
+          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-teal/15 text-teal">
+            <FolderPlus className="h-6 w-6" />
+          </div>
+          <h2 className="mt-4 font-display text-xl font-bold">No project yet</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Submit your research project first — you'll be able to post updates once it's live.
+          </p>
+          <Link to="/dashboard/student/submit">
+            <Button className="mt-5 bg-teal-gradient text-navy-deep">Submit Your Project</Button>
+          </Link>
+        </div>
+      </DashboardShell>
+    );
+  }
 
   const post = () => {
     if (!title.trim() || !body.trim()) {

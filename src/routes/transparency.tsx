@@ -14,7 +14,7 @@ export const Route = createFileRoute("/transparency")({
   head: () => ({
     meta: [
       { title: "Transparency Ledger — FundEd" },
-      { name: "description", content: "Public on-chain audit trail of every donation and milestone release." },
+      { name: "description", content: "Public ledger audit trail of every donation and milestone release." },
     ],
   }),
   component: TransparencyPage,
@@ -30,7 +30,7 @@ function TransparencyPage() {
         <p className="mt-3 text-muted-foreground">A public, real-time record of every donation and milestone release on the platform.</p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          <StatCard label="Total On-Chain" value={formatRs(platformStats.totalRaised)} icon={Coins} />
+          <StatCard label="Total Raised" value={formatRs(platformStats.totalRaised)} icon={Coins} />
           <StatCard label="Milestones Released" value={platformStats.milestonesCompleted.toString()} icon={ShieldCheck} accent="gold" />
           <StatCard label="Platform Commission" value={formatRs(platformStats.commission)} icon={TrendingUp} accent="navy" />
         </div>
@@ -54,7 +54,7 @@ function TransparencyPage() {
                     <td className="py-3"><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${i % 4 === 0 ? "bg-gold/15 text-gold" : "bg-teal/15 text-teal"}`}>{i % 4 === 0 ? "Release" : "Donation"}</span></td>
                     <td className="py-3 max-w-xs truncate">{d.projectTitle}</td>
                     <td className="py-3 text-right font-semibold">{formatRs(d.amount)}</td>
-                    <td className="py-3 pl-3"><a href="#" className="inline-flex items-center gap-1 font-mono text-xs text-teal hover:underline">{shortHash(d.txHash)} <ExternalLink className="h-3 w-3" /></a></td>
+                    <td className="py-3 pl-3"><a href="#" className="inline-flex items-center gap-1 font-mono text-xs text-teal hover:underline">{shortHash(d.payhereOrderId)} <ExternalLink className="h-3 w-3" /></a></td>
                     <td className="py-3 text-right text-xs text-muted-foreground">{new Date(d.date).toLocaleDateString()}</td>
                   </tr>
                 ))}

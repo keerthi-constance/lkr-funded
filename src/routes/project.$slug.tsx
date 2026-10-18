@@ -1,25 +1,21 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import confetti from "canvas-confetti";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
   CheckCircle2,
   Clock,
   Users,
-  Wallet,
   ShieldCheck,
   Share2,
-  ExternalLink,
   Lock,
-  FileCode2,
   FileText,
-  Play,
   MessageCircle,
   Heart,
+  CreditCard,
+  Loader2,
 } from "lucide-react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
-import { ContractViewer } from "@/components/contract-viewer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,19 +28,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { formatRs, toAda, shortHash, type Project, type MilestoneStatus } from "@/lib/mock-data";
-import { getProjectBySlug, buildDonationTx, submitDonationTx, confirmDonation } from "@/backend/functions";
-import {
-  SUPPORTED_WALLETS,
-  WALLET_LABELS,
-  getInstalledWalletKeys,
-  connectWallet,
-  signTxWitness,
-  type WalletKey,
-  type ConnectedWallet,
-} from "@/lib/cardano-wallet";
-
-const EXPLORER_TX_URL = "https://preprod.cardanoscan.io/transaction/";
+import { formatRs, shortHash, type Project, type MilestoneStatus } from "@/lib/mock-data";
+import { getProjectBySlug, submitMockPayment } from "@/backend/functions";
 
 export const Route = createFileRoute("/project/$slug")({
   loader: async ({ params }) => {
@@ -69,16 +54,23 @@ export const Route = createFileRoute("/project/$slug")({
 const milestoneStyles: Record<MilestoneStatus, { color: string; label: string; icon: any }> = {
   locked: { color: "bg-muted text-muted-foreground", label: "Locked", icon: Lock },
   active: { color: "bg-teal/20 text-teal border-teal/40", label: "In Progress", icon: Clock },
-  submitted: { color: "bg-gold/20 text-gold-foreground border-gold/40", label: "Under Review", icon: FileText },
+  submitted: {
+    color: "bg-gold/20 text-gold-foreground border-gold/40",
+    label: "Under Review",
+    icon: FileText,
+  },
   verified: { color: "bg-teal/30 text-teal border-teal", label: "Verified", icon: CheckCircle2 },
-  released: { color: "bg-teal-gradient text-navy-deep", label: "Funds Released", icon: CheckCircle2 },
+  released: {
+    color: "bg-teal-gradient text-navy-deep",
+    label: "Funds Released",
+    icon: CheckCircle2,
+  },
 };
 
 function ProjectPage() {
   const { project: loaderProject } = Route.useLoaderData();
-  const [project, setProject] = useState(loaderProject);
+  const [project] = useState(loaderProject);
   const [donateOpen, setDonateOpen] = useState(false);
-  const [contractOpen, setContractOpen] = useState(false);
   const pct = Math.min(100, Math.round((project.raised / project.goal) * 100));
 
   return (
@@ -113,10 +105,16 @@ function ProjectPage() {
 
                 <div className="mt-6 flex flex-wrap items-center gap-4">
                   <div className="flex items-center gap-3">
-                    <img src={project.student.avatar} alt="" className="h-11 w-11 rounded-full bg-muted" />
+                    <img
+                      src={project.student.avatar}
+                      alt=""
+                      className="h-11 w-11 rounded-full bg-muted"
+                    />
                     <div>
                       <div className="font-semibold">{project.student.name}</div>
-                      <div className="text-xs text-muted-foreground">{project.student.department}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {project.student.department}
+                      </div>
                     </div>
                   </div>
                   <div className="h-8 w-px bg-border" />
@@ -146,7 +144,9 @@ function ProjectPage() {
                   <TabsContent value="overview" className="mt-6 space-y-6">
                     <div>
                       <h2 className="font-display text-xl font-bold">Abstract</h2>
-                      <p className="mt-3 leading-relaxed text-muted-foreground">{project.abstract}</p>
+                      <p className="mt-3 leading-relaxed text-muted-foreground">
+                        {project.abstract}
+                      </p>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <InfoRow label="Supervisor" value={project.supervisor} />
@@ -160,8 +160,9 @@ function ProjectPage() {
                         <div>
                           <div className="font-semibold">Expected Impact</div>
                           <p className="mt-1 text-sm text-muted-foreground">
-                            Publication in a peer-reviewed venue, open-source release of all designs and datasets,
-                            and a working prototype demonstrated at the {project.university.short} annual research symposium.
+                            Publication in a peer-reviewed venue, open-source release of all designs
+                            and datasets, and a working prototype demonstrated at the{" "}
+                            {project.university.short} annual research symposium.
                           </p>
                         </div>
                       </div>
@@ -173,15 +174,17 @@ function ProjectPage() {
                   </TabsContent>
 
                   <TabsContent value="updates" className="mt-6 space-y-4">
-                    {project.updates.map((u: { date: string; title: string; body: string }, i: number) => (
-                      <div key={i} className="rounded-2xl border border-border bg-card p-5">
-                        <div className="flex items-start justify-between">
-                          <h3 className="font-display text-base font-semibold">{u.title}</h3>
-                          <span className="text-xs text-muted-foreground">{u.date}</span>
+                    {project.updates.map(
+                      (u: { date: string; title: string; body: string }, i: number) => (
+                        <div key={i} className="rounded-2xl border border-border bg-card p-5">
+                          <div className="flex items-start justify-between">
+                            <h3 className="font-display text-base font-semibold">{u.title}</h3>
+                            <span className="text-xs text-muted-foreground">{u.date}</span>
+                          </div>
+                          <p className="mt-2 text-sm text-muted-foreground">{u.body}</p>
                         </div>
-                        <p className="mt-2 text-sm text-muted-foreground">{u.body}</p>
-                      </div>
-                    ))}
+                      ),
+                    )}
                   </TabsContent>
 
                   <TabsContent value="docs" className="mt-6">
@@ -190,23 +193,45 @@ function ProjectPage() {
                         <FileText className="h-10 w-10 text-teal" />
                         <div className="flex-1">
                           <div className="font-semibold">Research_Proposal.pdf</div>
-                          <div className="text-xs text-muted-foreground">1.8 MB · uploaded 3 weeks ago</div>
+                          <div className="text-xs text-muted-foreground">
+                            1.8 MB · uploaded 3 weeks ago
+                          </div>
                         </div>
-                        <Button variant="outline" size="sm">Download</Button>
+                        <Button variant="outline" size="sm">
+                          Download
+                        </Button>
                       </div>
                     </div>
                     <div className="mt-4 rounded-2xl border border-border bg-card p-6">
                       <div className="font-semibold mb-3">Budget Breakdown</div>
                       <table className="w-full text-sm">
                         <thead className="text-xs uppercase text-muted-foreground">
-                          <tr><th className="pb-2 text-left">Item</th><th className="pb-2 text-right">Cost</th></tr>
+                          <tr>
+                            <th className="pb-2 text-left">Item</th>
+                            <th className="pb-2 text-right">Cost</th>
+                          </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
-                          <tr><td className="py-2">Sensors & electronics</td><td className="py-2 text-right">Rs. 285,000</td></tr>
-                          <tr><td className="py-2">Lab consumables</td><td className="py-2 text-right">Rs. 190,000</td></tr>
-                          <tr><td className="py-2">Fabrication & 3D printing</td><td className="py-2 text-right">Rs. 145,000</td></tr>
-                          <tr><td className="py-2">Field testing & travel</td><td className="py-2 text-right">Rs. 120,000</td></tr>
-                          <tr><td className="py-2">Publication fees</td><td className="py-2 text-right">Rs. 110,000</td></tr>
+                          <tr>
+                            <td className="py-2">Sensors & electronics</td>
+                            <td className="py-2 text-right">Rs. 285,000</td>
+                          </tr>
+                          <tr>
+                            <td className="py-2">Lab consumables</td>
+                            <td className="py-2 text-right">Rs. 190,000</td>
+                          </tr>
+                          <tr>
+                            <td className="py-2">Fabrication & 3D printing</td>
+                            <td className="py-2 text-right">Rs. 145,000</td>
+                          </tr>
+                          <tr>
+                            <td className="py-2">Field testing & travel</td>
+                            <td className="py-2 text-right">Rs. 120,000</td>
+                          </tr>
+                          <tr>
+                            <td className="py-2">Publication fees</td>
+                            <td className="py-2 text-right">Rs. 110,000</td>
+                          </tr>
                         </tbody>
                       </table>
                     </div>
@@ -215,16 +240,47 @@ function ProjectPage() {
                   <TabsContent value="donors" className="mt-6">
                     <div className="rounded-2xl border border-border bg-card p-2">
                       {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="flex items-center gap-3 rounded-xl p-3 hover:bg-muted/50">
+                        <div
+                          key={i}
+                          className="flex items-center gap-3 rounded-xl p-3 hover:bg-muted/50"
+                        >
                           <div className="grid h-9 w-9 place-items-center rounded-full bg-teal/15 text-xs font-bold text-teal">
                             {["N", "K", "A", "M", "S", "P", "R", "D"][i]}
                           </div>
                           <div className="flex-1">
-                            <div className="text-sm font-medium">{["Nishan A.", "Kavya R.", "Anonymous", "M. Perera", "Sanduni B.", "Priya D.", "Ravi J.", "Dilan S."][i]}</div>
-                            <div className="text-xs text-muted-foreground">{["Keep going!", "Proud of this work", "", "For future generations 🌱", "Amazing project", "", "Milestone hero!", "Rooting for you"][i]}</div>
+                            <div className="text-sm font-medium">
+                              {
+                                [
+                                  "Nishan A.",
+                                  "Kavya R.",
+                                  "Anonymous",
+                                  "M. Perera",
+                                  "Sanduni B.",
+                                  "Priya D.",
+                                  "Ravi J.",
+                                  "Dilan S.",
+                                ][i]
+                              }
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {
+                                [
+                                  "Keep going!",
+                                  "Proud of this work",
+                                  "",
+                                  "For future generations 🌱",
+                                  "Amazing project",
+                                  "",
+                                  "Milestone hero!",
+                                  "Rooting for you",
+                                ][i]
+                              }
+                            </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm font-semibold">{formatRs([5000, 2500, 10000, 1000, 500, 25000, 7500, 1500][i])}</div>
+                            <div className="text-sm font-semibold">
+                              {formatRs([5000, 2500, 10000, 1000, 500, 25000, 7500, 1500][i])}
+                            </div>
                             <div className="text-[11px] text-muted-foreground">{i + 1}d ago</div>
                           </div>
                         </div>
@@ -235,7 +291,9 @@ function ProjectPage() {
                   <TabsContent value="comments" className="mt-6">
                     <div className="rounded-2xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
                       <MessageCircle className="mx-auto h-8 w-8 opacity-40" />
-                      <p className="mt-3">Sign in to ask questions or leave a comment for the research team.</p>
+                      <p className="mt-3">
+                        Sign in to ask questions or leave a comment for the research team.
+                      </p>
                     </div>
                   </TabsContent>
                 </Tabs>
@@ -246,8 +304,12 @@ function ProjectPage() {
                 <div className="rounded-3xl border border-border bg-card p-6 shadow-elevated">
                   <div className="flex items-baseline justify-between">
                     <div>
-                      <div className="font-display text-3xl font-bold">{formatRs(project.raised)}</div>
-                      <div className="text-xs text-muted-foreground">≈ {toAda(project.raised)} ADA raised of {formatRs(project.goal)}</div>
+                      <div className="font-display text-3xl font-bold">
+                        {formatRs(project.raised)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        raised of {formatRs(project.goal)}
+                      </div>
                     </div>
                     <div className="text-3xl font-bold text-teal">{pct}%</div>
                   </div>
@@ -261,7 +323,11 @@ function ProjectPage() {
                   </div>
                   <div className="mt-4 grid grid-cols-2 gap-3">
                     <Stat icon={Users} label="Donors" value={project.donors.toString()} />
-                    <Stat icon={Clock} label={project.daysLeft > 0 ? "Days Left" : "Status"} value={project.daysLeft > 0 ? project.daysLeft.toString() : "Funded"} />
+                    <Stat
+                      icon={Clock}
+                      label={project.daysLeft > 0 ? "Days Left" : "Status"}
+                      value={project.daysLeft > 0 ? project.daysLeft.toString() : "Funded"}
+                    />
                   </div>
                   <Button
                     size="lg"
@@ -269,13 +335,6 @@ function ProjectPage() {
                     className="mt-5 w-full bg-teal-gradient text-navy-deep shadow-glow-teal hover:opacity-90"
                   >
                     <Heart className="mr-2 h-4 w-4" /> Donate Now
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="mt-2 w-full border-teal/40 text-teal hover:bg-teal/10 hover:text-teal"
-                    onClick={() => setContractOpen(true)}
-                  >
-                    <FileCode2 className="mr-2 h-4 w-4" /> View Smart Contract
                   </Button>
                   <div className="mt-3 flex gap-2">
                     <Button
@@ -294,8 +353,13 @@ function ProjectPage() {
                     </Button>
                   </div>
                   <div className="mt-4 rounded-xl bg-muted/60 p-3 text-[11px] text-muted-foreground">
-                    <div className="flex items-center gap-1.5"><Lock className="h-3 w-3 text-teal" /> Milestone-locked on Cardano</div>
-                    <div className="mt-1 flex items-center gap-1.5"><ShieldCheck className="h-3 w-3 text-teal" /> University-verified project</div>
+                    <div className="flex items-center gap-1.5">
+                      <Lock className="h-3 w-3 text-teal" /> Funds released only per verified
+                      milestone
+                    </div>
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <ShieldCheck className="h-3 w-3 text-teal" /> University-verified project
+                    </div>
                   </div>
                 </div>
               </aside>
@@ -305,15 +369,7 @@ function ProjectPage() {
       </main>
       <SiteFooter />
 
-      <DonateDialog
-        open={donateOpen}
-        onOpenChange={setDonateOpen}
-        projectTitle={project.title}
-        projectSlug={project.slug}
-        onDonated={(raised, donors) => setProject((p) => ({ ...p, raised, donors }))}
-      />
-
-      <ContractViewer open={contractOpen} onOpenChange={setContractOpen} />
+      <DonateDialog open={donateOpen} onOpenChange={setDonateOpen} projectSlug={project.slug} />
     </>
   );
 }
@@ -355,24 +411,38 @@ function MilestoneStepper({ project }: { project: Project }) {
             transition={{ delay: i * 0.1 }}
             className="relative flex gap-4 rounded-2xl border border-border bg-card p-5"
           >
-            <div className={`relative grid h-12 w-12 flex-none place-items-center rounded-2xl ${s.color} ${isPulse ? "pulse-ring" : ""}`}>
+            <div
+              className={`relative grid h-12 w-12 flex-none place-items-center rounded-2xl ${s.color} ${isPulse ? "pulse-ring" : ""}`}
+            >
               <Icon className="h-5 w-5" />
             </div>
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-display font-semibold">Milestone {i + 1}: {m.title}</h3>
-                <Badge variant="outline" className={s.color.includes("bg-teal-gradient") ? "border-teal bg-teal/10 text-teal" : ""}>{s.label}</Badge>
+                <h3 className="font-display font-semibold">
+                  Milestone {i + 1}: {m.title}
+                </h3>
+                <Badge
+                  variant="outline"
+                  className={
+                    s.color.includes("bg-teal-gradient") ? "border-teal bg-teal/10 text-teal" : ""
+                  }
+                >
+                  {s.label}
+                </Badge>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">{m.description}</p>
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                <span>{m.percent}% of funds · <span className="font-semibold text-foreground">{formatRs(amount)}</span></span>
+                <span>
+                  {m.percent}% of funds ·{" "}
+                  <span className="font-semibold text-foreground">{formatRs(amount)}</span>
+                </span>
                 <span>Target: {new Date(m.targetDate).toLocaleDateString()}</span>
                 <span>Evidence: {m.evidenceType}</span>
               </div>
-              {m.txHash && (
-                <a href="#" className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-teal hover:underline">
-                  <ExternalLink className="h-3 w-3" /> tx: {shortHash(m.txHash)}
-                </a>
+              {m.ledgerTxId && (
+                <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-teal">
+                  ledger ref: {shortHash(m.ledgerTxId)}
+                </span>
               )}
             </div>
           </motion.div>
@@ -382,30 +452,37 @@ function MilestoneStepper({ project }: { project: Project }) {
   );
 }
 
+// TEMPORARY: PayHere's real Checkout flow needs PAYHERE_MERCHANT_SECRET and
+// PAYHERE_NOTIFY_URL, both of which need a real domain registered with
+// PayHere (Integrations > Add Domain/App rejects platform subdomains like
+// *.vercel.app) — not available yet. This dialog uses a mock payment step
+// instead: a card form that's purely decorative (nothing typed into it is
+// ever sent to the server) and always "succeeds". submitMockPayment does
+// exactly what the real notify_url webhook would do — credit
+// project.raised/donors and record the contribution on the ledger — so the
+// rest of the app behaves identically either way. See server/payhere.ts,
+// server/functions.ts#createPayhereCheckout, and routes/api.payhere.notify.ts
+// for the real flow, ready to swap back in once a domain is registered.
 function DonateDialog({
   open,
   onOpenChange,
-  projectTitle,
   projectSlug,
-  onDonated,
 }: {
   open: boolean;
   onOpenChange: (b: boolean) => void;
-  projectTitle: string;
   projectSlug: string;
-  onDonated: (raised: number, donors: number) => void;
 }) {
+  const navigate = useNavigate();
+  const [step, setStep] = useState<"amount" | "card" | "processing" | "failed">("amount");
   const [amount, setAmount] = useState(1000);
+  const [donorName, setDonorName] = useState("");
   const [message, setMessage] = useState("");
   const [anon, setAnon] = useState(false);
-  const [step, setStep] = useState<"amount" | "wallet" | "processing" | "pending" | "success" | "failed">("amount");
-  const [txHash, setTxHash] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvv, setCardCvv] = useState("");
+  const [cardName, setCardName] = useState("");
   const [error, setError] = useState("");
-  const [installed, setInstalled] = useState<WalletKey[]>([]);
-  const [connecting, setConnecting] = useState<WalletKey | null>(null);
-  const [wallet, setWallet] = useState<ConnectedWallet | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const pollCountRef = useRef(0);
 
   const fee = Math.round(amount * 0.02);
   const net = amount - fee;
@@ -413,91 +490,54 @@ function DonateDialog({
   const reset = () => {
     setStep("amount");
     setAmount(1000);
+    setDonorName("");
     setMessage("");
     setAnon(false);
-    setTxHash("");
+    setCardNumber("");
+    setCardExpiry("");
+    setCardCvv("");
+    setCardName("");
     setError("");
-    setWallet(null);
-    setConnecting(null);
-    if (pollRef.current) clearInterval(pollRef.current);
-    pollCountRef.current = 0;
   };
 
-  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
+  const canSubmitCard = cardNumber.trim() && cardExpiry.trim() && cardCvv.trim() && cardName.trim();
 
-  const goToWallet = () => {
-    setInstalled(getInstalledWalletKeys());
-    setStep("wallet");
-  };
-
-  const startPolling = (hash: string) => {
-    pollCountRef.current = 0;
-    pollRef.current = setInterval(async () => {
-      pollCountRef.current += 1;
-      try {
-        const result = await confirmDonation({ data: hash });
-        if (result.status === "confirmed") {
-          if (pollRef.current) clearInterval(pollRef.current);
-          if (result.raised !== undefined && result.donors !== undefined) onDonated(result.raised, result.donors);
-          setStep("success");
-          confetti({
-            particleCount: 120,
-            spread: 90,
-            origin: { y: 0.4 },
-            colors: ["#14E0C4", "#F2B84B", "#ffffff"],
-          });
-        } else if (result.status === "failed") {
-          if (pollRef.current) clearInterval(pollRef.current);
-          setStep("failed");
-        } else if (pollCountRef.current >= 36) {
-          if (pollRef.current) clearInterval(pollRef.current);
-          setError("Still not confirmed after 3 minutes — check the explorer link, it may just be a slow block.");
-        }
-      } catch {
-        // transient network error while polling — keep trying until the cap.
-      }
-    }, 5000);
-  };
-
-  const pickWallet = async (key: WalletKey) => {
-    setConnecting(key);
+  const pay = async () => {
+    setStep("processing");
     setError("");
     try {
-      const connected = await connectWallet(key);
-      setWallet(connected);
-      if (!connected.api) throw new Error("Wallet connected but no signing API available.");
-
-      setStep("processing");
-      const utxosCbor = await connected.api.getUtxos();
-      if (!utxosCbor || utxosCbor.length === 0) {
-        throw new Error("No funded UTXOs found in this wallet. Fund it from the Cardano preprod faucet first.");
-      }
-
-      const donor = connected.address;
-      const { unsignedTxCbor, amountLovelace } = await buildDonationTx({
-        data: { slug: projectSlug, changeAddress: connected.address, utxosCbor, amount, donor, message, anonymous: anon },
+      // A short pause so "processing payment" reads as a real step rather
+      // than an instant no-op — the card fields above never leave the
+      // browser, only the donation details below are sent.
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      const result = await submitMockPayment({
+        data: {
+          slug: projectSlug,
+          amount,
+          donor: anon ? "Anonymous" : donorName || "Anonymous",
+          message,
+          anonymous: anon,
+        },
       });
-      const witnessCbor = await signTxWitness(connected.api, unsignedTxCbor);
-      const { txHash: hash } = await submitDonationTx({
-        data: { slug: projectSlug, unsignedTxCbor, witnessCbor, amount, amountLovelace, donor, message, anonymous: anon },
-      });
-
-      setTxHash(hash);
-      setStep("pending");
-      startPolling(hash);
+      onOpenChange(false);
+      setTimeout(reset, 300);
+      navigate({ to: "/donate/return", search: { order_id: result.orderId } });
     } catch (err) {
-      console.error("Donation failed:", err);
-      const msg = err instanceof Error ? err.message : "Wallet connection failed. Please try again.";
+      const msg = err instanceof Error ? err.message : "Payment failed. Please try again.";
       setError(msg);
       toast.error(msg);
-      setStep("wallet");
-    } finally {
-      setConnecting(null);
+      setStep("failed");
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) setTimeout(reset, 300); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        onOpenChange(o);
+        if (!o) setTimeout(reset, 300);
+      }}
+    >
       <DialogContent className="max-w-md">
         {step === "amount" && (
           <>
@@ -506,7 +546,9 @@ function DonateDialog({
             </DialogHeader>
             <div className="space-y-5">
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Amount</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Amount
+                </label>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {[500, 1000, 5000, 10000].map((a) => (
                     <button
@@ -518,137 +560,127 @@ function DonateDialog({
                     </button>
                   ))}
                 </div>
-                <div className="mt-3 flex items-center gap-2">
-                  <Input
-                    type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(Number(e.target.value) || 0)}
-                    className="text-lg font-semibold"
-                  />
-                  <span className="text-xs text-muted-foreground">≈ {toAda(amount)} ADA</span>
-                </div>
+                <Input
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(Number(e.target.value) || 0)}
+                  className="mt-3 text-lg font-semibold"
+                />
               </div>
               <div className="rounded-xl border border-border bg-muted/40 p-4 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Your donation</span><span className="font-medium">{formatRs(amount)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Platform fee (2%)</span><span className="font-medium">{formatRs(fee)}</span></div>
-                <div className="mt-2 flex justify-between border-t border-border pt-2"><span className="font-semibold">Student receives</span><span className="font-bold text-teal">{formatRs(net)}</span></div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Your donation</span>
+                  <span className="font-medium">{formatRs(amount)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Platform fee (2%)</span>
+                  <span className="font-medium">{formatRs(fee)}</span>
+                </div>
+                <div className="mt-2 flex justify-between border-t border-border pt-2">
+                  <span className="font-semibold">Student receives</span>
+                  <span className="font-bold text-teal">{formatRs(net)}</span>
+                </div>
               </div>
-              <Textarea placeholder="Optional message to the student..." value={message} onChange={(e) => setMessage(e.target.value)} rows={2} />
+              <Input
+                placeholder="Your name (optional)"
+                value={donorName}
+                onChange={(e) => setDonorName(e.target.value)}
+              />
+              <Textarea
+                placeholder="Optional message to the student..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={2}
+              />
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={anon} onChange={(e) => setAnon(e.target.checked)} />
                 Donate anonymously
               </label>
-              {error && <div className="rounded-lg bg-destructive/10 p-2 text-xs text-destructive">{error}</div>}
-              <Button onClick={goToWallet} className="w-full bg-teal-gradient text-navy-deep">
-                Continue to Wallet <Wallet className="ml-2 h-4 w-4" />
+              <Button
+                onClick={() => setStep("card")}
+                disabled={amount <= 0}
+                className="w-full bg-teal-gradient text-navy-deep"
+              >
+                Continue to Payment <CreditCard className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </>
         )}
-        {step === "wallet" && (
+        {step === "card" && (
           <>
-            <DialogHeader><DialogTitle>Connect your wallet</DialogTitle></DialogHeader>
-            {error && <div className="rounded-lg bg-destructive/10 p-2 text-xs text-destructive">{error}</div>}
-            <div className="space-y-2">
-              {SUPPORTED_WALLETS.map((key) => {
-                const w = WALLET_LABELS[key];
-                const isInstalled = installed.includes(key);
-                const isConnecting = connecting === key;
-                return (
-                  <button
-                    key={key}
-                    onClick={() => pickWallet(key)}
-                    disabled={connecting !== null}
-                    className={`flex w-full items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition ${isInstalled ? "hover:border-teal hover:bg-teal/5" : "opacity-60"} disabled:cursor-wait`}
-                  >
-                    <div className="grid h-10 w-10 place-items-center rounded-lg bg-teal-gradient font-display font-bold text-navy-deep">
-                      {isConnecting ? (
-                        <motion.span animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
-                          <Wallet className="h-4 w-4" />
-                        </motion.span>
-                      ) : (
-                        w.name[0]
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-semibold">{w.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {isConnecting ? "Approve in your wallet..." : isInstalled ? w.desc : "Not installed in this browser"}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+            <DialogHeader>
+              <DialogTitle>Payment details</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="rounded-xl border border-border bg-muted/40 p-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Amount to pay</span>
+                  <span className="font-bold text-teal">{formatRs(amount)}</span>
+                </div>
+              </div>
+              <Input
+                placeholder="Card number"
+                inputMode="numeric"
+                value={cardNumber}
+                onChange={(e) => setCardNumber(e.target.value)}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  placeholder="MM/YY"
+                  value={cardExpiry}
+                  onChange={(e) => setCardExpiry(e.target.value)}
+                />
+                <Input
+                  placeholder="CVV"
+                  inputMode="numeric"
+                  value={cardCvv}
+                  onChange={(e) => setCardCvv(e.target.value)}
+                />
+              </div>
+              <Input
+                placeholder="Cardholder name"
+                value={cardName}
+                onChange={(e) => setCardName(e.target.value)}
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Test mode — any values work here. Nothing typed above is sent anywhere; it's only
+                used to simulate this step.
+              </p>
+              {error && (
+                <div className="rounded-lg bg-destructive/10 p-2 text-xs text-destructive">
+                  {error}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setStep("amount")}>
+                  Back
+                </Button>
+                <Button
+                  onClick={pay}
+                  disabled={!canSubmitCard}
+                  className="flex-1 bg-teal-gradient text-navy-deep"
+                >
+                  Pay {formatRs(amount)}
+                </Button>
+              </div>
             </div>
           </>
         )}
         {step === "processing" && (
           <div className="py-10 text-center">
             <div className="pulse-ring mx-auto grid h-16 w-16 place-items-center rounded-full bg-teal-gradient">
-              <Wallet className="h-7 w-7 text-navy-deep" />
+              <Loader2 className="h-7 w-7 animate-spin text-navy-deep" />
             </div>
-            <h3 className="mt-6 font-display text-xl font-bold">Building your donation...</h3>
-            <p className="mt-2 text-sm text-muted-foreground">Approve the transaction in your wallet popup.</p>
-          </div>
-        )}
-        {step === "pending" && (
-          <div className="py-10 text-center">
-            <div className="pulse-ring mx-auto grid h-16 w-16 place-items-center rounded-full bg-teal-gradient">
-              <Wallet className="h-7 w-7 text-navy-deep" />
-            </div>
-            <h3 className="mt-6 font-display text-xl font-bold">Confirming on-chain...</h3>
-            <p className="mt-2 text-sm text-muted-foreground">Your transaction was submitted — waiting for Cardano to confirm it.</p>
-            <a href={`${EXPLORER_TX_URL}${txHash}`} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1 font-mono text-xs text-teal hover:underline">
-              {shortHash(txHash)} <ExternalLink className="h-3 w-3" />
-            </a>
-            {error && <p className="mt-3 text-xs text-amber-600">{error}</p>}
+            <h3 className="mt-6 font-display text-xl font-bold">Processing payment...</h3>
+            <p className="mt-2 text-sm text-muted-foreground">This will just take a moment.</p>
           </div>
         )}
         {step === "failed" && (
-          <div className="py-10 text-center">
-            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-red-500/10 text-red-600">✕</div>
-            <h3 className="mt-6 font-display text-xl font-bold">Donation failed verification</h3>
-            <p className="mt-2 text-sm text-muted-foreground">The transaction didn&apos;t pay the treasury address with a valid donation tag — contact support if this seems wrong.</p>
-            <DialogFooter className="mt-6">
-              <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)}>Close</Button>
-            </DialogFooter>
-          </div>
-        )}
-        {step === "success" && (
           <div className="py-6 text-center">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200 }}
-              className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-teal-gradient shadow-glow-teal"
-            >
-              <CheckCircle2 className="h-8 w-8 text-navy-deep" />
-            </motion.div>
-            <h3 className="mt-6 font-display text-2xl font-bold">Thank you!</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Your donation of <span className="font-semibold text-foreground">{formatRs(amount)}</span> to {projectTitle} was successful.
-            </p>
-            {wallet && (
-              <div className="mt-6 rounded-xl border border-border bg-muted/40 p-4 text-left text-xs">
-                <div className="text-muted-foreground">Connected Wallet ({WALLET_LABELS[wallet.key].name})</div>
-                <div className="mt-1 truncate font-mono">{shortHash(wallet.address)}</div>
-                <div className="mt-1 text-muted-foreground">Balance: {wallet.balanceAda.toLocaleString()} ADA</div>
-              </div>
-            )}
-            <div className="mt-3 rounded-xl border border-border bg-muted/40 p-4 text-left text-xs">
-              <div className="text-muted-foreground">Cardano Transaction</div>
-              <div className="mt-1 flex items-center justify-between gap-2">
-                <span className="truncate font-mono">{shortHash(txHash)}</span>
-                <a href={`${EXPLORER_TX_URL}${txHash}`} target="_blank" rel="noreferrer" className="inline-flex flex-none items-center gap-1 font-semibold text-teal hover:underline">
-                  Explorer <ExternalLink className="h-3 w-3" />
-                </a>
-              </div>
-            </div>
-            <DialogFooter className="mt-6">
-              <Button className="w-full bg-teal-gradient text-navy-deep" onClick={() => onOpenChange(false)}>
-                Done
-              </Button>
-            </DialogFooter>
+            <p className="text-sm text-destructive">{error}</p>
+            <Button variant="outline" className="mt-4 w-full" onClick={() => setStep("card")}>
+              Try again
+            </Button>
           </div>
         )}
       </DialogContent>

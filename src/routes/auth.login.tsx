@@ -1,23 +1,53 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { z } from "zod";
 import { motion } from "framer-motion";
-import { GraduationCap, Building2, ShieldCheck, Heart } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { login } from "@/backend/auth-functions";
+import type { Role } from "@/backend/server/auth";
 
 export const Route = createFileRoute("/auth/login")({
   head: () => ({ meta: [{ title: "Sign in — FundEd" }] }),
+  validateSearch: z.object({ redirect: z.string().optional() }),
   component: LoginPage,
 });
 
-const roles = [
-  { key: "student", label: "Student", to: "/dashboard/student", icon: GraduationCap },
-  { key: "university", label: "University", to: "/dashboard/university", icon: Building2 },
-  { key: "admin", label: "Admin", to: "/dashboard/admin", icon: ShieldCheck },
-  { key: "donor", label: "Donor", to: "/dashboard/donor", icon: Heart },
-];
+const dashboardByRole: Record<Role, string> = {
+  student: "/dashboard/student",
+  university: "/dashboard/university",
+  admin: "/dashboard/admin",
+  donor: "/dashboard/donor",
+};
 
 function LoginPage() {
+  const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const user = await login({ data: { username, password } });
+      if (redirect) {
+        window.location.href = redirect;
+      } else {
+        navigate({ to: dashboardByRole[user.role] });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign in failed. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <>
       <SiteHeader />
@@ -27,34 +57,49 @@ function LoginPage() {
             <h1 className="font-display text-2xl font-bold">Welcome back</h1>
             <p className="mt-1 text-sm text-muted-foreground">Sign in to your FundEd account.</p>
 
-            <div className="mt-6 space-y-4">
+            <form onSubmit={submit} className="mt-6 space-y-4">
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email</label>
-                <Input className="mt-1.5" type="email" placeholder="you@university.lk" />
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Username
+                </label>
+                <Input
+                  className="mt-1.5"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="e.g. admin, donr1, student1, uoc"
+                  autoComplete="username"
+                  required
+                />
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Password</label>
-                <Input className="mt-1.5" type="password" placeholder="••••••••" />
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Password
+                </label>
+                <Input
+                  className="mt-1.5"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  required
+                />
               </div>
-              <Button className="w-full bg-teal-gradient text-navy-deep">Sign in</Button>
-            </div>
-
-            <div className="my-6 flex items-center gap-3">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-xs text-muted-foreground">or continue as</span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              {roles.map((r) => (
-                <Link key={r.key} to={r.to} className="group flex flex-col items-center gap-2 rounded-xl border border-border bg-muted/30 p-4 transition hover:border-teal hover:bg-teal/5">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-teal/15 text-teal">
-                    <r.icon className="h-5 w-5" />
-                  </div>
-                  <span className="text-sm font-semibold">{r.label} Demo</span>
-                </Link>
-              ))}
-            </div>
+              {error && (
+                <div className="rounded-lg bg-destructive/10 p-2.5 text-xs text-destructive">
+                  {error}
+                </div>
+              )}
+              <Button type="submit" disabled={busy} className="w-full bg-teal-gradient text-navy-deep">
+                {busy ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing in…
+                  </>
+                ) : (
+                  "Sign in"
+                )}
+              </Button>
+            </form>
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
               New here? <Link to="/auth/register" className="font-semibold text-teal hover:underline">Create an account</Link>

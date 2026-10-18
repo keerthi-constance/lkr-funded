@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Users, Clock } from "lucide-react";
 import type { Project } from "@/lib/mock-data";
-import { formatRs, toAda } from "@/lib/mock-data";
+import { formatRs } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 
 export function ProjectCard({ project, index = 0 }: { project: Project; index?: number }) {
@@ -62,7 +62,7 @@ export function ProjectCard({ project, index = 0 }: { project: Project; index?: 
             <div className="mt-2 flex items-baseline justify-between">
               <div>
                 <div className="text-sm font-semibold">{formatRs(project.raised)}</div>
-                <div className="text-[11px] text-muted-foreground">≈ {toAda(project.raised)} ADA · of {formatRs(project.goal)}</div>
+                <div className="text-[11px] text-muted-foreground">raised of {formatRs(project.goal)}</div>
               </div>
               <div className="text-right">
                 <div className="text-sm font-bold text-teal">{pct}%</div>

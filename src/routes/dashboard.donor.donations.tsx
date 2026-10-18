@@ -3,7 +3,7 @@ import { ExternalLink } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { StatCard } from "@/components/stat-card";
 import { Coins, Heart, Trophy } from "lucide-react";
-import { projects, formatRs, shortHash, toAda } from "@/lib/mock-data";
+import { projects, formatRs, shortHash } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/dashboard/donor/donations")({
   component: DonationsPage,
@@ -28,7 +28,7 @@ function DonationsPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <StatCard label="Total Donated" value={formatRs(total)} hint={`≈ ${toAda(total)} ADA`} icon={Coins} />
+          <StatCard label="Total Donated" value={formatRs(total)} icon={Coins} />
           <StatCard label="Projects Supported" value={rows.length.toString()} icon={Heart} accent="gold" />
           <StatCard label="Milestones Helped Complete" value="14" icon={Trophy} accent="navy" />
         </div>
@@ -41,7 +41,7 @@ function DonationsPage() {
                 <th className="p-4 text-right">Amount</th>
                 <th className="p-4 text-left">Milestone Status</th>
                 <th className="p-4 text-right">Date</th>
-                <th className="p-4 text-right">Tx</th>
+                <th className="p-4 text-right">Order ID</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -50,11 +50,11 @@ function DonationsPage() {
                   <td className="p-4">
                     <Link to="/project/$slug" params={{ slug: project.slug }} className="font-medium hover:text-teal">{project.title}</Link>
                   </td>
-                  <td className="p-4 text-right font-semibold">{formatRs(amount)}<div className="text-xs font-normal text-muted-foreground">≈ {toAda(amount)} ADA</div></td>
+                  <td className="p-4 text-right font-semibold">{formatRs(amount)}</td>
                   <td className="p-4"><span className="rounded-full bg-teal/15 px-2 py-0.5 text-xs font-semibold text-teal capitalize">{project.milestones[milestoneIdx]?.status ?? "active"}</span></td>
                   <td className="p-4 text-right text-xs text-muted-foreground">{new Date(Date.now() - milestoneIdx * 7 * 86400000).toLocaleDateString()}</td>
                   <td className="p-4 text-right">
-                    <a href="#" className="inline-flex items-center gap-1 font-mono text-xs text-teal hover:underline">{shortHash(`tx_${project.id}9f3c8b2a7e4d1f6c8b9e2d5a7f1c3b8e`)} <ExternalLink className="h-3 w-3" /></a>
+                    <a href="#" className="inline-flex items-center gap-1 font-mono text-xs text-teal hover:underline">{shortHash(`fundEd_${project.id}9f3c8b2a7e4d1f6c8b9e2d5a7f1c3b8e`)} <ExternalLink className="h-3 w-3" /></a>
                   </td>
                 </tr>
               ))}

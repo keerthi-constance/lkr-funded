@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { Input } from "@/components/ui/input";
@@ -8,8 +8,18 @@ import { Search, LayoutGrid, List } from "lucide-react";
 import { ProjectCard } from "@/components/project-card";
 import { categories, universities } from "@/lib/mock-data";
 import { getProjects } from "@/backend/functions";
+import { getCurrentUser } from "@/backend/auth-functions";
 
 export const Route = createFileRoute("/browse")({
+  // Browsing the full project catalog requires an account (any role) — a
+  // signed-out visitor clicking "Explore Projects" is sent to sign in
+  // first. Individual /project/$slug pages stay open to everyone.
+  beforeLoad: async ({ location }) => {
+    const user = await getCurrentUser();
+    if (!user) {
+      throw redirect({ to: "/auth/login", search: { redirect: location.href } });
+    }
+  },
   loader: () => getProjects(),
   head: () => ({
     meta: [

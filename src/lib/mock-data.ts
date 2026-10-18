@@ -1,9 +1,5 @@
-export const ADA_RATE = 172; // 1 ADA ≈ Rs. 172
-
 export const formatRs = (n: number) =>
   "Rs. " + n.toLocaleString("en-IN", { maximumFractionDigits: 0 });
-
-export const toAda = (rs: number) => (rs / ADA_RATE).toFixed(2);
 
 export const shortHash = (h: string) => h.slice(0, 10) + "..." + h.slice(-6);
 
@@ -17,7 +13,7 @@ export type Milestone = {
   status: MilestoneStatus;
   targetDate: string;
   evidenceType: "document" | "photo" | "video" | "demo";
-  txHash?: string;
+  ledgerTxId?: string;
 };
 
 export type Project = {
@@ -137,7 +133,7 @@ function makeMilestones(goal: number, seed: number): Milestone[] {
     status: chosen[i],
     targetDate: new Date(Date.now() + (i + 1) * 45 * 86400000).toISOString(),
     evidenceType: s.ev,
-    txHash: chosen[i] === "released" ? `tx_${seed}${i}a8f3c9b2e7d4a1f6c8b9e2d5a7f1c3b8` : undefined,
+    ledgerTxId: chosen[i] === "released" ? `ledger_${seed}${i}a8f3c9b2e7d4a1f6c8b9e2d5a7f1c3b8` : undefined,
   }));
 }
 
@@ -151,7 +147,7 @@ export const projects: Project[] = titles.map((title, i) => {
     tagline: taglines[i],
     abstract:
       taglines[i] +
-      " This research addresses a critical need in the region. Using rigorous methodology and open science principles, the team aims to publish results in peer-reviewed venues and open-source all designs. Blockchain-verified milestones ensure every rupee is spent as intended.",
+      " This research addresses a critical need in the region. Using rigorous methodology and open science principles, the team aims to publish results in peer-reviewed venues and open-source all designs. Ledger-verified milestones ensure every rupee is spent as intended.",
     category: categories[i % categories.length],
     tags: ["open-science", "sri-lanka", "impact"].slice(0, 2 + (i % 2)),
     student: {
@@ -170,11 +166,26 @@ export const projects: Project[] = titles.map((title, i) => {
     milestones: makeMilestones(goal, i),
     updates: [
       { date: "2 days ago", title: "Prototype v2 assembled", body: "We completed assembly of the second prototype and began initial calibration tests." },
-      { date: "1 week ago", title: "Milestone 1 verified ✅", body: "The university has verified our first milestone. Funds have been released on-chain." },
+      { date: "1 week ago", title: "Milestone 1 verified ✅", body: "The university has verified our first milestone. Funds have been released to our account." },
       { date: "3 weeks ago", title: "Project launched", body: "Thank you to our first donors! We are officially live and beginning procurement." },
     ],
   };
 });
+
+// Demo seed for student2's project — "Solar Desalination for Coastal Villages"
+// (projects[1]). Shows 50% of the goal raised (above the 30% milestone
+// threshold) with one milestone already submitted for university review and
+// the next one active, so the full apply -> review -> release flow can be
+// demonstrated end to end.
+const solarDemo = projects[1];
+if (solarDemo) {
+  solarDemo.raised = Math.floor(solarDemo.goal * 0.5);
+  solarDemo.status = "live";
+  solarDemo.milestones[1].status = "submitted";
+  solarDemo.milestones[2].status = "active";
+  solarDemo.milestones[1].ledgerTxId = undefined;
+  solarDemo.milestones[2].ledgerTxId = undefined;
+}
 
 export const platformStats = {
   totalRaised: 47_820_000,
@@ -197,7 +208,7 @@ export type DonationRow = {
   project: string;
   amount: number;
   date: string;
-  txHash: string;
+  payhereOrderId: string;
 };
 
 export const recentDonations: DonationRow[] = Array.from({ length: 24 }, (_, i) => ({
@@ -206,5 +217,5 @@ export const recentDonations: DonationRow[] = Array.from({ length: 24 }, (_, i) 
   project: titles[i % titles.length],
   amount: [500, 1000, 2500, 5000, 10000, 25000][i % 6],
   date: new Date(Date.now() - i * 3600000 * 7).toLocaleDateString(),
-  txHash: `tx_${i}f9c3a8b2e7d4a1f6c8b9e2d5a7f1c3b8`,
+  payhereOrderId: `fundEd_${i}f9c3a8b2e7d4a1f6c8b9e2d5a7f1c3b8`,
 }));

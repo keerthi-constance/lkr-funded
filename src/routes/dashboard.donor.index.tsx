@@ -25,9 +25,9 @@ function DonorHome() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <StatCard label="Total Donated" value={formatRs(47500)} hint="≈ 276 ADA" icon={Coins} />
+          <StatCard label="Total Donated" value={formatRs(47500)} icon={Coins} />
           <StatCard label="Projects Supported" value="8" hint="Across 5 categories" icon={Heart} accent="gold" />
-          <StatCard label="Milestones Helped Complete" value="14" hint="On-chain verified" icon={Trophy} accent="navy" />
+          <StatCard label="Milestones Helped Complete" value="14" hint="Ledger verified" icon={Trophy} accent="navy" />
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-6">

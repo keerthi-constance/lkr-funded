@@ -16,8 +16,15 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectSlugRouteImport } from './routes/project.$slug'
+import { Route as DonateReturnRouteImport } from './routes/donate.return'
+import { Route as DonateCancelRouteImport } from './routes/donate.cancel'
+import { Route as DashboardUniversityRouteImport } from './routes/dashboard.university'
+import { Route as DashboardStudentRouteImport } from './routes/dashboard.student'
+import { Route as DashboardDonorRouteImport } from './routes/dashboard.donor'
+import { Route as DashboardAdminRouteImport } from './routes/dashboard.admin'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as AuctionSlugRouteImport } from './routes/auction.$slug'
 import { Route as DashboardUniversityIndexRouteImport } from './routes/dashboard.university.index'
 import { Route as DashboardStudentIndexRouteImport } from './routes/dashboard.student.index'
 import { Route as DashboardDonorIndexRouteImport } from './routes/dashboard.donor.index'
@@ -26,19 +33,19 @@ import { Route as DashboardUniversityStudentsRouteImport } from './routes/dashbo
 import { Route as DashboardUniversityProjectsRouteImport } from './routes/dashboard.university.projects'
 import { Route as DashboardUniversityMilestonesRouteImport } from './routes/dashboard.university.milestones'
 import { Route as DashboardUniversityAnalyticsRouteImport } from './routes/dashboard.university.analytics'
-import { Route as DashboardStudentWalletRouteImport } from './routes/dashboard.student.wallet'
 import { Route as DashboardStudentUpdatesRouteImport } from './routes/dashboard.student.updates'
 import { Route as DashboardStudentSubmitRouteImport } from './routes/dashboard.student.submit'
 import { Route as DashboardStudentMilestonesRouteImport } from './routes/dashboard.student.milestones'
 import { Route as DashboardDonorWatchlistRouteImport } from './routes/dashboard.donor.watchlist'
-import { Route as DashboardDonorWalletRouteImport } from './routes/dashboard.donor.wallet'
 import { Route as DashboardDonorProfileRouteImport } from './routes/dashboard.donor.profile'
 import { Route as DashboardDonorDonationsRouteImport } from './routes/dashboard.donor.donations'
 import { Route as DashboardAdminSettingsRouteImport } from './routes/dashboard.admin.settings'
 import { Route as DashboardAdminReleasesRouteImport } from './routes/dashboard.admin.releases'
 import { Route as DashboardAdminLedgerRouteImport } from './routes/dashboard.admin.ledger'
 import { Route as DashboardAdminDisputesRouteImport } from './routes/dashboard.admin.disputes'
+import { Route as DashboardAdminAuctionsRouteImport } from './routes/dashboard.admin.auctions'
 import { Route as DashboardAdminApprovalsRouteImport } from './routes/dashboard.admin.approvals'
+import { Route as ApiPayhereNotifyRouteImport } from './routes/api.payhere.notify'
 
 const TransparencyRoute = TransparencyRouteImport.update({
   id: '/transparency',
@@ -75,6 +82,36 @@ const ProjectSlugRoute = ProjectSlugRouteImport.update({
   path: '/project/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DonateReturnRoute = DonateReturnRouteImport.update({
+  id: '/donate/return',
+  path: '/donate/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DonateCancelRoute = DonateCancelRouteImport.update({
+  id: '/donate/cancel',
+  path: '/donate/cancel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardUniversityRoute = DashboardUniversityRouteImport.update({
+  id: '/university',
+  path: '/university',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardStudentRoute = DashboardStudentRouteImport.update({
+  id: '/student',
+  path: '/student',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardDonorRoute = DashboardDonorRouteImport.update({
+  id: '/donor',
+  path: '/donor',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminRoute = DashboardAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/auth/register',
   path: '/auth/register',
@@ -85,116 +122,121 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuctionSlugRoute = AuctionSlugRouteImport.update({
+  id: '/auction/$slug',
+  path: '/auction/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardUniversityIndexRoute =
   DashboardUniversityIndexRouteImport.update({
-    id: '/university/',
-    path: '/university/',
-    getParentRoute: () => DashboardRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => DashboardUniversityRoute,
   } as any)
 const DashboardStudentIndexRoute = DashboardStudentIndexRouteImport.update({
-  id: '/student/',
-  path: '/student/',
-  getParentRoute: () => DashboardRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardStudentRoute,
 } as any)
 const DashboardDonorIndexRoute = DashboardDonorIndexRouteImport.update({
-  id: '/donor/',
-  path: '/donor/',
-  getParentRoute: () => DashboardRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardDonorRoute,
 } as any)
 const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
-  getParentRoute: () => DashboardRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardAdminRoute,
 } as any)
 const DashboardUniversityStudentsRoute =
   DashboardUniversityStudentsRouteImport.update({
-    id: '/university/students',
-    path: '/university/students',
-    getParentRoute: () => DashboardRoute,
+    id: '/students',
+    path: '/students',
+    getParentRoute: () => DashboardUniversityRoute,
   } as any)
 const DashboardUniversityProjectsRoute =
   DashboardUniversityProjectsRouteImport.update({
-    id: '/university/projects',
-    path: '/university/projects',
-    getParentRoute: () => DashboardRoute,
+    id: '/projects',
+    path: '/projects',
+    getParentRoute: () => DashboardUniversityRoute,
   } as any)
 const DashboardUniversityMilestonesRoute =
   DashboardUniversityMilestonesRouteImport.update({
-    id: '/university/milestones',
-    path: '/university/milestones',
-    getParentRoute: () => DashboardRoute,
+    id: '/milestones',
+    path: '/milestones',
+    getParentRoute: () => DashboardUniversityRoute,
   } as any)
 const DashboardUniversityAnalyticsRoute =
   DashboardUniversityAnalyticsRouteImport.update({
-    id: '/university/analytics',
-    path: '/university/analytics',
-    getParentRoute: () => DashboardRoute,
+    id: '/analytics',
+    path: '/analytics',
+    getParentRoute: () => DashboardUniversityRoute,
   } as any)
-const DashboardStudentWalletRoute = DashboardStudentWalletRouteImport.update({
-  id: '/student/wallet',
-  path: '/student/wallet',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const DashboardStudentUpdatesRoute = DashboardStudentUpdatesRouteImport.update({
-  id: '/student/updates',
-  path: '/student/updates',
-  getParentRoute: () => DashboardRoute,
+  id: '/updates',
+  path: '/updates',
+  getParentRoute: () => DashboardStudentRoute,
 } as any)
 const DashboardStudentSubmitRoute = DashboardStudentSubmitRouteImport.update({
-  id: '/student/submit',
-  path: '/student/submit',
-  getParentRoute: () => DashboardRoute,
+  id: '/submit',
+  path: '/submit',
+  getParentRoute: () => DashboardStudentRoute,
 } as any)
 const DashboardStudentMilestonesRoute =
   DashboardStudentMilestonesRouteImport.update({
-    id: '/student/milestones',
-    path: '/student/milestones',
-    getParentRoute: () => DashboardRoute,
+    id: '/milestones',
+    path: '/milestones',
+    getParentRoute: () => DashboardStudentRoute,
   } as any)
 const DashboardDonorWatchlistRoute = DashboardDonorWatchlistRouteImport.update({
-  id: '/donor/watchlist',
-  path: '/donor/watchlist',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardDonorWalletRoute = DashboardDonorWalletRouteImport.update({
-  id: '/donor/wallet',
-  path: '/donor/wallet',
-  getParentRoute: () => DashboardRoute,
+  id: '/watchlist',
+  path: '/watchlist',
+  getParentRoute: () => DashboardDonorRoute,
 } as any)
 const DashboardDonorProfileRoute = DashboardDonorProfileRouteImport.update({
-  id: '/donor/profile',
-  path: '/donor/profile',
-  getParentRoute: () => DashboardRoute,
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => DashboardDonorRoute,
 } as any)
 const DashboardDonorDonationsRoute = DashboardDonorDonationsRouteImport.update({
-  id: '/donor/donations',
-  path: '/donor/donations',
-  getParentRoute: () => DashboardRoute,
+  id: '/donations',
+  path: '/donations',
+  getParentRoute: () => DashboardDonorRoute,
 } as any)
 const DashboardAdminSettingsRoute = DashboardAdminSettingsRouteImport.update({
-  id: '/admin/settings',
-  path: '/admin/settings',
-  getParentRoute: () => DashboardRoute,
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardAdminRoute,
 } as any)
 const DashboardAdminReleasesRoute = DashboardAdminReleasesRouteImport.update({
-  id: '/admin/releases',
-  path: '/admin/releases',
-  getParentRoute: () => DashboardRoute,
+  id: '/releases',
+  path: '/releases',
+  getParentRoute: () => DashboardAdminRoute,
 } as any)
 const DashboardAdminLedgerRoute = DashboardAdminLedgerRouteImport.update({
-  id: '/admin/ledger',
-  path: '/admin/ledger',
-  getParentRoute: () => DashboardRoute,
+  id: '/ledger',
+  path: '/ledger',
+  getParentRoute: () => DashboardAdminRoute,
 } as any)
 const DashboardAdminDisputesRoute = DashboardAdminDisputesRouteImport.update({
-  id: '/admin/disputes',
-  path: '/admin/disputes',
-  getParentRoute: () => DashboardRoute,
+  id: '/disputes',
+  path: '/disputes',
+  getParentRoute: () => DashboardAdminRoute,
+} as any)
+const DashboardAdminAuctionsRoute = DashboardAdminAuctionsRouteImport.update({
+  id: '/auctions',
+  path: '/auctions',
+  getParentRoute: () => DashboardAdminRoute,
 } as any)
 const DashboardAdminApprovalsRoute = DashboardAdminApprovalsRouteImport.update({
-  id: '/admin/approvals',
-  path: '/admin/approvals',
-  getParentRoute: () => DashboardRoute,
+  id: '/approvals',
+  path: '/approvals',
+  getParentRoute: () => DashboardAdminRoute,
+} as any)
+const ApiPayhereNotifyRoute = ApiPayhereNotifyRouteImport.update({
+  id: '/api/payhere/notify',
+  path: '/api/payhere/notify',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -204,22 +246,29 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/transparency': typeof TransparencyRoute
+  '/auction/$slug': typeof AuctionSlugRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/dashboard/admin': typeof DashboardAdminRouteWithChildren
+  '/dashboard/donor': typeof DashboardDonorRouteWithChildren
+  '/dashboard/student': typeof DashboardStudentRouteWithChildren
+  '/dashboard/university': typeof DashboardUniversityRouteWithChildren
+  '/donate/cancel': typeof DonateCancelRoute
+  '/donate/return': typeof DonateReturnRoute
   '/project/$slug': typeof ProjectSlugRoute
+  '/api/payhere/notify': typeof ApiPayhereNotifyRoute
   '/dashboard/admin/approvals': typeof DashboardAdminApprovalsRoute
+  '/dashboard/admin/auctions': typeof DashboardAdminAuctionsRoute
   '/dashboard/admin/disputes': typeof DashboardAdminDisputesRoute
   '/dashboard/admin/ledger': typeof DashboardAdminLedgerRoute
   '/dashboard/admin/releases': typeof DashboardAdminReleasesRoute
   '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
   '/dashboard/donor/donations': typeof DashboardDonorDonationsRoute
   '/dashboard/donor/profile': typeof DashboardDonorProfileRoute
-  '/dashboard/donor/wallet': typeof DashboardDonorWalletRoute
   '/dashboard/donor/watchlist': typeof DashboardDonorWatchlistRoute
   '/dashboard/student/milestones': typeof DashboardStudentMilestonesRoute
   '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
   '/dashboard/student/updates': typeof DashboardStudentUpdatesRoute
-  '/dashboard/student/wallet': typeof DashboardStudentWalletRoute
   '/dashboard/university/analytics': typeof DashboardUniversityAnalyticsRoute
   '/dashboard/university/milestones': typeof DashboardUniversityMilestonesRoute
   '/dashboard/university/projects': typeof DashboardUniversityProjectsRoute
@@ -236,22 +285,25 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/transparency': typeof TransparencyRoute
+  '/auction/$slug': typeof AuctionSlugRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/donate/cancel': typeof DonateCancelRoute
+  '/donate/return': typeof DonateReturnRoute
   '/project/$slug': typeof ProjectSlugRoute
+  '/api/payhere/notify': typeof ApiPayhereNotifyRoute
   '/dashboard/admin/approvals': typeof DashboardAdminApprovalsRoute
+  '/dashboard/admin/auctions': typeof DashboardAdminAuctionsRoute
   '/dashboard/admin/disputes': typeof DashboardAdminDisputesRoute
   '/dashboard/admin/ledger': typeof DashboardAdminLedgerRoute
   '/dashboard/admin/releases': typeof DashboardAdminReleasesRoute
   '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
   '/dashboard/donor/donations': typeof DashboardDonorDonationsRoute
   '/dashboard/donor/profile': typeof DashboardDonorProfileRoute
-  '/dashboard/donor/wallet': typeof DashboardDonorWalletRoute
   '/dashboard/donor/watchlist': typeof DashboardDonorWatchlistRoute
   '/dashboard/student/milestones': typeof DashboardStudentMilestonesRoute
   '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
   '/dashboard/student/updates': typeof DashboardStudentUpdatesRoute
-  '/dashboard/student/wallet': typeof DashboardStudentWalletRoute
   '/dashboard/university/analytics': typeof DashboardUniversityAnalyticsRoute
   '/dashboard/university/milestones': typeof DashboardUniversityMilestonesRoute
   '/dashboard/university/projects': typeof DashboardUniversityProjectsRoute
@@ -269,22 +321,29 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/transparency': typeof TransparencyRoute
+  '/auction/$slug': typeof AuctionSlugRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
+  '/dashboard/admin': typeof DashboardAdminRouteWithChildren
+  '/dashboard/donor': typeof DashboardDonorRouteWithChildren
+  '/dashboard/student': typeof DashboardStudentRouteWithChildren
+  '/dashboard/university': typeof DashboardUniversityRouteWithChildren
+  '/donate/cancel': typeof DonateCancelRoute
+  '/donate/return': typeof DonateReturnRoute
   '/project/$slug': typeof ProjectSlugRoute
+  '/api/payhere/notify': typeof ApiPayhereNotifyRoute
   '/dashboard/admin/approvals': typeof DashboardAdminApprovalsRoute
+  '/dashboard/admin/auctions': typeof DashboardAdminAuctionsRoute
   '/dashboard/admin/disputes': typeof DashboardAdminDisputesRoute
   '/dashboard/admin/ledger': typeof DashboardAdminLedgerRoute
   '/dashboard/admin/releases': typeof DashboardAdminReleasesRoute
   '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
   '/dashboard/donor/donations': typeof DashboardDonorDonationsRoute
   '/dashboard/donor/profile': typeof DashboardDonorProfileRoute
-  '/dashboard/donor/wallet': typeof DashboardDonorWalletRoute
   '/dashboard/donor/watchlist': typeof DashboardDonorWatchlistRoute
   '/dashboard/student/milestones': typeof DashboardStudentMilestonesRoute
   '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
   '/dashboard/student/updates': typeof DashboardStudentUpdatesRoute
-  '/dashboard/student/wallet': typeof DashboardStudentWalletRoute
   '/dashboard/university/analytics': typeof DashboardUniversityAnalyticsRoute
   '/dashboard/university/milestones': typeof DashboardUniversityMilestonesRoute
   '/dashboard/university/projects': typeof DashboardUniversityProjectsRoute
@@ -303,22 +362,29 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/sitemap.xml'
     | '/transparency'
+    | '/auction/$slug'
     | '/auth/login'
     | '/auth/register'
+    | '/dashboard/admin'
+    | '/dashboard/donor'
+    | '/dashboard/student'
+    | '/dashboard/university'
+    | '/donate/cancel'
+    | '/donate/return'
     | '/project/$slug'
+    | '/api/payhere/notify'
     | '/dashboard/admin/approvals'
+    | '/dashboard/admin/auctions'
     | '/dashboard/admin/disputes'
     | '/dashboard/admin/ledger'
     | '/dashboard/admin/releases'
     | '/dashboard/admin/settings'
     | '/dashboard/donor/donations'
     | '/dashboard/donor/profile'
-    | '/dashboard/donor/wallet'
     | '/dashboard/donor/watchlist'
     | '/dashboard/student/milestones'
     | '/dashboard/student/submit'
     | '/dashboard/student/updates'
-    | '/dashboard/student/wallet'
     | '/dashboard/university/analytics'
     | '/dashboard/university/milestones'
     | '/dashboard/university/projects'
@@ -335,22 +401,25 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/sitemap.xml'
     | '/transparency'
+    | '/auction/$slug'
     | '/auth/login'
     | '/auth/register'
+    | '/donate/cancel'
+    | '/donate/return'
     | '/project/$slug'
+    | '/api/payhere/notify'
     | '/dashboard/admin/approvals'
+    | '/dashboard/admin/auctions'
     | '/dashboard/admin/disputes'
     | '/dashboard/admin/ledger'
     | '/dashboard/admin/releases'
     | '/dashboard/admin/settings'
     | '/dashboard/donor/donations'
     | '/dashboard/donor/profile'
-    | '/dashboard/donor/wallet'
     | '/dashboard/donor/watchlist'
     | '/dashboard/student/milestones'
     | '/dashboard/student/submit'
     | '/dashboard/student/updates'
-    | '/dashboard/student/wallet'
     | '/dashboard/university/analytics'
     | '/dashboard/university/milestones'
     | '/dashboard/university/projects'
@@ -367,22 +436,29 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/sitemap.xml'
     | '/transparency'
+    | '/auction/$slug'
     | '/auth/login'
     | '/auth/register'
+    | '/dashboard/admin'
+    | '/dashboard/donor'
+    | '/dashboard/student'
+    | '/dashboard/university'
+    | '/donate/cancel'
+    | '/donate/return'
     | '/project/$slug'
+    | '/api/payhere/notify'
     | '/dashboard/admin/approvals'
+    | '/dashboard/admin/auctions'
     | '/dashboard/admin/disputes'
     | '/dashboard/admin/ledger'
     | '/dashboard/admin/releases'
     | '/dashboard/admin/settings'
     | '/dashboard/donor/donations'
     | '/dashboard/donor/profile'
-    | '/dashboard/donor/wallet'
     | '/dashboard/donor/watchlist'
     | '/dashboard/student/milestones'
     | '/dashboard/student/submit'
     | '/dashboard/student/updates'
-    | '/dashboard/student/wallet'
     | '/dashboard/university/analytics'
     | '/dashboard/university/milestones'
     | '/dashboard/university/projects'
@@ -400,9 +476,13 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TransparencyRoute: typeof TransparencyRoute
+  AuctionSlugRoute: typeof AuctionSlugRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
+  DonateCancelRoute: typeof DonateCancelRoute
+  DonateReturnRoute: typeof DonateReturnRoute
   ProjectSlugRoute: typeof ProjectSlugRoute
+  ApiPayhereNotifyRoute: typeof ApiPayhereNotifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -456,6 +536,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/donate/return': {
+      id: '/donate/return'
+      path: '/donate/return'
+      fullPath: '/donate/return'
+      preLoaderRoute: typeof DonateReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/donate/cancel': {
+      id: '/donate/cancel'
+      path: '/donate/cancel'
+      fullPath: '/donate/cancel'
+      preLoaderRoute: typeof DonateCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/university': {
+      id: '/dashboard/university'
+      path: '/university'
+      fullPath: '/dashboard/university'
+      preLoaderRoute: typeof DashboardUniversityRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/student': {
+      id: '/dashboard/student'
+      path: '/student'
+      fullPath: '/dashboard/student'
+      preLoaderRoute: typeof DashboardStudentRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/donor': {
+      id: '/dashboard/donor'
+      path: '/donor'
+      fullPath: '/dashboard/donor'
+      preLoaderRoute: typeof DashboardDonorRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin': {
+      id: '/dashboard/admin'
+      path: '/admin'
+      fullPath: '/dashboard/admin'
+      preLoaderRoute: typeof DashboardAdminRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/auth/register': {
       id: '/auth/register'
       path: '/auth/register'
@@ -470,202 +592,253 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auction/$slug': {
+      id: '/auction/$slug'
+      path: '/auction/$slug'
+      fullPath: '/auction/$slug'
+      preLoaderRoute: typeof AuctionSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/university/': {
       id: '/dashboard/university/'
-      path: '/university'
+      path: '/'
       fullPath: '/dashboard/university/'
       preLoaderRoute: typeof DashboardUniversityIndexRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardUniversityRoute
     }
     '/dashboard/student/': {
       id: '/dashboard/student/'
-      path: '/student'
+      path: '/'
       fullPath: '/dashboard/student/'
       preLoaderRoute: typeof DashboardStudentIndexRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardStudentRoute
     }
     '/dashboard/donor/': {
       id: '/dashboard/donor/'
-      path: '/donor'
+      path: '/'
       fullPath: '/dashboard/donor/'
       preLoaderRoute: typeof DashboardDonorIndexRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardDonorRoute
     }
     '/dashboard/admin/': {
       id: '/dashboard/admin/'
-      path: '/admin'
+      path: '/'
       fullPath: '/dashboard/admin/'
       preLoaderRoute: typeof DashboardAdminIndexRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardAdminRoute
     }
     '/dashboard/university/students': {
       id: '/dashboard/university/students'
-      path: '/university/students'
+      path: '/students'
       fullPath: '/dashboard/university/students'
       preLoaderRoute: typeof DashboardUniversityStudentsRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardUniversityRoute
     }
     '/dashboard/university/projects': {
       id: '/dashboard/university/projects'
-      path: '/university/projects'
+      path: '/projects'
       fullPath: '/dashboard/university/projects'
       preLoaderRoute: typeof DashboardUniversityProjectsRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardUniversityRoute
     }
     '/dashboard/university/milestones': {
       id: '/dashboard/university/milestones'
-      path: '/university/milestones'
+      path: '/milestones'
       fullPath: '/dashboard/university/milestones'
       preLoaderRoute: typeof DashboardUniversityMilestonesRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardUniversityRoute
     }
     '/dashboard/university/analytics': {
       id: '/dashboard/university/analytics'
-      path: '/university/analytics'
+      path: '/analytics'
       fullPath: '/dashboard/university/analytics'
       preLoaderRoute: typeof DashboardUniversityAnalyticsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/student/wallet': {
-      id: '/dashboard/student/wallet'
-      path: '/student/wallet'
-      fullPath: '/dashboard/student/wallet'
-      preLoaderRoute: typeof DashboardStudentWalletRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardUniversityRoute
     }
     '/dashboard/student/updates': {
       id: '/dashboard/student/updates'
-      path: '/student/updates'
+      path: '/updates'
       fullPath: '/dashboard/student/updates'
       preLoaderRoute: typeof DashboardStudentUpdatesRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardStudentRoute
     }
     '/dashboard/student/submit': {
       id: '/dashboard/student/submit'
-      path: '/student/submit'
+      path: '/submit'
       fullPath: '/dashboard/student/submit'
       preLoaderRoute: typeof DashboardStudentSubmitRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardStudentRoute
     }
     '/dashboard/student/milestones': {
       id: '/dashboard/student/milestones'
-      path: '/student/milestones'
+      path: '/milestones'
       fullPath: '/dashboard/student/milestones'
       preLoaderRoute: typeof DashboardStudentMilestonesRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardStudentRoute
     }
     '/dashboard/donor/watchlist': {
       id: '/dashboard/donor/watchlist'
-      path: '/donor/watchlist'
+      path: '/watchlist'
       fullPath: '/dashboard/donor/watchlist'
       preLoaderRoute: typeof DashboardDonorWatchlistRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/donor/wallet': {
-      id: '/dashboard/donor/wallet'
-      path: '/donor/wallet'
-      fullPath: '/dashboard/donor/wallet'
-      preLoaderRoute: typeof DashboardDonorWalletRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardDonorRoute
     }
     '/dashboard/donor/profile': {
       id: '/dashboard/donor/profile'
-      path: '/donor/profile'
+      path: '/profile'
       fullPath: '/dashboard/donor/profile'
       preLoaderRoute: typeof DashboardDonorProfileRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardDonorRoute
     }
     '/dashboard/donor/donations': {
       id: '/dashboard/donor/donations'
-      path: '/donor/donations'
+      path: '/donations'
       fullPath: '/dashboard/donor/donations'
       preLoaderRoute: typeof DashboardDonorDonationsRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardDonorRoute
     }
     '/dashboard/admin/settings': {
       id: '/dashboard/admin/settings'
-      path: '/admin/settings'
+      path: '/settings'
       fullPath: '/dashboard/admin/settings'
       preLoaderRoute: typeof DashboardAdminSettingsRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardAdminRoute
     }
     '/dashboard/admin/releases': {
       id: '/dashboard/admin/releases'
-      path: '/admin/releases'
+      path: '/releases'
       fullPath: '/dashboard/admin/releases'
       preLoaderRoute: typeof DashboardAdminReleasesRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardAdminRoute
     }
     '/dashboard/admin/ledger': {
       id: '/dashboard/admin/ledger'
-      path: '/admin/ledger'
+      path: '/ledger'
       fullPath: '/dashboard/admin/ledger'
       preLoaderRoute: typeof DashboardAdminLedgerRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardAdminRoute
     }
     '/dashboard/admin/disputes': {
       id: '/dashboard/admin/disputes'
-      path: '/admin/disputes'
+      path: '/disputes'
       fullPath: '/dashboard/admin/disputes'
       preLoaderRoute: typeof DashboardAdminDisputesRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardAdminRoute
+    }
+    '/dashboard/admin/auctions': {
+      id: '/dashboard/admin/auctions'
+      path: '/auctions'
+      fullPath: '/dashboard/admin/auctions'
+      preLoaderRoute: typeof DashboardAdminAuctionsRouteImport
+      parentRoute: typeof DashboardAdminRoute
     }
     '/dashboard/admin/approvals': {
       id: '/dashboard/admin/approvals'
-      path: '/admin/approvals'
+      path: '/approvals'
       fullPath: '/dashboard/admin/approvals'
       preLoaderRoute: typeof DashboardAdminApprovalsRouteImport
-      parentRoute: typeof DashboardRoute
+      parentRoute: typeof DashboardAdminRoute
+    }
+    '/api/payhere/notify': {
+      id: '/api/payhere/notify'
+      path: '/api/payhere/notify'
+      fullPath: '/api/payhere/notify'
+      preLoaderRoute: typeof ApiPayhereNotifyRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-interface DashboardRouteChildren {
+interface DashboardAdminRouteChildren {
   DashboardAdminApprovalsRoute: typeof DashboardAdminApprovalsRoute
+  DashboardAdminAuctionsRoute: typeof DashboardAdminAuctionsRoute
   DashboardAdminDisputesRoute: typeof DashboardAdminDisputesRoute
   DashboardAdminLedgerRoute: typeof DashboardAdminLedgerRoute
   DashboardAdminReleasesRoute: typeof DashboardAdminReleasesRoute
   DashboardAdminSettingsRoute: typeof DashboardAdminSettingsRoute
-  DashboardDonorDonationsRoute: typeof DashboardDonorDonationsRoute
-  DashboardDonorProfileRoute: typeof DashboardDonorProfileRoute
-  DashboardDonorWalletRoute: typeof DashboardDonorWalletRoute
-  DashboardDonorWatchlistRoute: typeof DashboardDonorWatchlistRoute
-  DashboardStudentMilestonesRoute: typeof DashboardStudentMilestonesRoute
-  DashboardStudentSubmitRoute: typeof DashboardStudentSubmitRoute
-  DashboardStudentUpdatesRoute: typeof DashboardStudentUpdatesRoute
-  DashboardStudentWalletRoute: typeof DashboardStudentWalletRoute
-  DashboardUniversityAnalyticsRoute: typeof DashboardUniversityAnalyticsRoute
-  DashboardUniversityMilestonesRoute: typeof DashboardUniversityMilestonesRoute
-  DashboardUniversityProjectsRoute: typeof DashboardUniversityProjectsRoute
-  DashboardUniversityStudentsRoute: typeof DashboardUniversityStudentsRoute
   DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
-  DashboardDonorIndexRoute: typeof DashboardDonorIndexRoute
-  DashboardStudentIndexRoute: typeof DashboardStudentIndexRoute
-  DashboardUniversityIndexRoute: typeof DashboardUniversityIndexRoute
 }
 
-const DashboardRouteChildren: DashboardRouteChildren = {
+const DashboardAdminRouteChildren: DashboardAdminRouteChildren = {
   DashboardAdminApprovalsRoute: DashboardAdminApprovalsRoute,
+  DashboardAdminAuctionsRoute: DashboardAdminAuctionsRoute,
   DashboardAdminDisputesRoute: DashboardAdminDisputesRoute,
   DashboardAdminLedgerRoute: DashboardAdminLedgerRoute,
   DashboardAdminReleasesRoute: DashboardAdminReleasesRoute,
   DashboardAdminSettingsRoute: DashboardAdminSettingsRoute,
+  DashboardAdminIndexRoute: DashboardAdminIndexRoute,
+}
+
+const DashboardAdminRouteWithChildren = DashboardAdminRoute._addFileChildren(
+  DashboardAdminRouteChildren,
+)
+
+interface DashboardDonorRouteChildren {
+  DashboardDonorDonationsRoute: typeof DashboardDonorDonationsRoute
+  DashboardDonorProfileRoute: typeof DashboardDonorProfileRoute
+  DashboardDonorWatchlistRoute: typeof DashboardDonorWatchlistRoute
+  DashboardDonorIndexRoute: typeof DashboardDonorIndexRoute
+}
+
+const DashboardDonorRouteChildren: DashboardDonorRouteChildren = {
   DashboardDonorDonationsRoute: DashboardDonorDonationsRoute,
   DashboardDonorProfileRoute: DashboardDonorProfileRoute,
-  DashboardDonorWalletRoute: DashboardDonorWalletRoute,
   DashboardDonorWatchlistRoute: DashboardDonorWatchlistRoute,
+  DashboardDonorIndexRoute: DashboardDonorIndexRoute,
+}
+
+const DashboardDonorRouteWithChildren = DashboardDonorRoute._addFileChildren(
+  DashboardDonorRouteChildren,
+)
+
+interface DashboardStudentRouteChildren {
+  DashboardStudentMilestonesRoute: typeof DashboardStudentMilestonesRoute
+  DashboardStudentSubmitRoute: typeof DashboardStudentSubmitRoute
+  DashboardStudentUpdatesRoute: typeof DashboardStudentUpdatesRoute
+  DashboardStudentIndexRoute: typeof DashboardStudentIndexRoute
+}
+
+const DashboardStudentRouteChildren: DashboardStudentRouteChildren = {
   DashboardStudentMilestonesRoute: DashboardStudentMilestonesRoute,
   DashboardStudentSubmitRoute: DashboardStudentSubmitRoute,
   DashboardStudentUpdatesRoute: DashboardStudentUpdatesRoute,
-  DashboardStudentWalletRoute: DashboardStudentWalletRoute,
+  DashboardStudentIndexRoute: DashboardStudentIndexRoute,
+}
+
+const DashboardStudentRouteWithChildren =
+  DashboardStudentRoute._addFileChildren(DashboardStudentRouteChildren)
+
+interface DashboardUniversityRouteChildren {
+  DashboardUniversityAnalyticsRoute: typeof DashboardUniversityAnalyticsRoute
+  DashboardUniversityMilestonesRoute: typeof DashboardUniversityMilestonesRoute
+  DashboardUniversityProjectsRoute: typeof DashboardUniversityProjectsRoute
+  DashboardUniversityStudentsRoute: typeof DashboardUniversityStudentsRoute
+  DashboardUniversityIndexRoute: typeof DashboardUniversityIndexRoute
+}
+
+const DashboardUniversityRouteChildren: DashboardUniversityRouteChildren = {
   DashboardUniversityAnalyticsRoute: DashboardUniversityAnalyticsRoute,
   DashboardUniversityMilestonesRoute: DashboardUniversityMilestonesRoute,
   DashboardUniversityProjectsRoute: DashboardUniversityProjectsRoute,
   DashboardUniversityStudentsRoute: DashboardUniversityStudentsRoute,
-  DashboardAdminIndexRoute: DashboardAdminIndexRoute,
-  DashboardDonorIndexRoute: DashboardDonorIndexRoute,
-  DashboardStudentIndexRoute: DashboardStudentIndexRoute,
   DashboardUniversityIndexRoute: DashboardUniversityIndexRoute,
+}
+
+const DashboardUniversityRouteWithChildren =
+  DashboardUniversityRoute._addFileChildren(DashboardUniversityRouteChildren)
+
+interface DashboardRouteChildren {
+  DashboardAdminRoute: typeof DashboardAdminRouteWithChildren
+  DashboardDonorRoute: typeof DashboardDonorRouteWithChildren
+  DashboardStudentRoute: typeof DashboardStudentRouteWithChildren
+  DashboardUniversityRoute: typeof DashboardUniversityRouteWithChildren
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAdminRoute: DashboardAdminRouteWithChildren,
+  DashboardDonorRoute: DashboardDonorRouteWithChildren,
+  DashboardStudentRoute: DashboardStudentRouteWithChildren,
+  DashboardUniversityRoute: DashboardUniversityRouteWithChildren,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
@@ -679,9 +852,13 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TransparencyRoute: TransparencyRoute,
+  AuctionSlugRoute: AuctionSlugRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
+  DonateCancelRoute: DonateCancelRoute,
+  DonateReturnRoute: DonateReturnRoute,
   ProjectSlugRoute: ProjectSlugRoute,
+  ApiPayhereNotifyRoute: ApiPayhereNotifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
