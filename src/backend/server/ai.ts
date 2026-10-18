@@ -149,7 +149,7 @@ export async function explainRecommendation(
         {
           role: "system",
           content:
-            "Write exactly one short sentence (under 30 words) explaining why this project was recommended to an investor, using ONLY the facts given. Never invent numbers, amounts, or claims not present in the facts. Never state a percentage or score. Plain sentence only, no preamble.",
+            "Write exactly one short sentence (under 30 words) explaining why this project was recommended to an investor, using ONLY the facts given. Never invent numbers, amounts, or claims not present in the facts. Never state a percentage or score. If you mention a currency amount, write it as \"Rs 12,000\" — never ₹, $, or LKR. Plain sentence only, no preamble, no markdown.",
         },
         { role: "user", content: facts },
       ],
@@ -210,6 +210,27 @@ export const OFFTOPIC_MESSAGE =
 export const UNAUTHORIZED_MESSAGE =
   "I can't access that information through your investor account.";
 
+// Small talk gets a friendly canned reply instead of the RAG refusal —
+// greetings/thanks aren't "general knowledge questions," they're just
+// conversational, so answering them doesn't violate the RAG-only policy.
+const GREETING_PATTERN = /^(hi|hello|hey|yo|good (morning|afternoon|evening)|greetings)[!.,\s]*$/i;
+const THANKS_PATTERN = /^(thanks|thank you|thx|cheers|ok(ay)?|great|cool|nice)[!.,\s]*$/i;
+const FAREWELL_PATTERN = /^(bye|goodbye|see you|later)[!.,\s]*$/i;
+
+function canned(question: string, displayName: string): string | undefined {
+  const q = question.trim();
+  if (GREETING_PATTERN.test(q)) {
+    return `Hi ${displayName.split(" ")[0]}! I'm the FundEd AI Assistant — ask me about your donations, funded projects, payments, or milestones.`;
+  }
+  if (THANKS_PATTERN.test(q)) {
+    return "You're welcome! Let me know if you have more questions about your donations or funded projects.";
+  }
+  if (FAREWELL_PATTERN.test(q)) {
+    return "Goodbye! Come back anytime you have a question about your FundEd activity.";
+  }
+  return undefined;
+}
+
 const DONATION_KEYWORDS = [
   "donat", "paid", "payment", "transaction", "spent", "charge", "contribut", "history", "fee",
 ];
@@ -260,6 +281,9 @@ export async function buildRetrievalContext(
 ): Promise<RetrievalResult> {
   const trimmed = question.trim().slice(0, 500);
   if (!trimmed) return { shortCircuit: OFFTOPIC_MESSAGE, contextText: "", sources: [] };
+
+  const cannedReply = canned(trimmed, user.displayName);
+  if (cannedReply) return { shortCircuit: cannedReply, contextText: "", sources: [] };
 
   if (hasAny(trimmed, UNAUTHORIZED_KEYWORDS)) {
     return { shortCircuit: UNAUTHORIZED_MESSAGE, contextText: "", sources: [] };
@@ -381,7 +405,12 @@ export async function answerQuestion(
     `If asked for something unrelated to FundEd, reply EXACTLY: "${OFFTOPIC_MESSAGE}" ` +
     "You are strictly read-only: never claim to execute, authorize, or schedule a payment, refund, " +
     "approval, or blockchain transaction. Keep answers concise (a few sentences) and reference the " +
-    "specific records you used.";
+    "specific records you used. " +
+    "Formatting: plain conversational text or short bullet lines only — never a markdown table " +
+    "(pipe-delimited rows), since this is a chat bubble with no table rendering. Comparing several " +
+    "projects? Use one short bullet per project instead of a table. You may use **bold** sparingly. " +
+    "Currency: always write amounts in Sri Lankan Rupees as \"Rs 12,000\" — never ₹, $, LKR, or any " +
+    "other symbol, matching the retrieved context's own formatting.";
 
   const userPrompt = `Investor: ${user.displayName} (${user.username})\n\nQuestion: ${trimmed}\n\nRETRIEVED CONTEXT:\n${contextText}`;
 

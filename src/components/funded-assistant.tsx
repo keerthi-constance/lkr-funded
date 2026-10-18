@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { MessageCircle, Send, Sparkles, Loader2 } from "lucide-react";
 import {
@@ -15,6 +15,66 @@ import { askAssistant } from "@/backend/ai-functions";
 
 type AssistantAnswer = Awaited<ReturnType<typeof askAssistant>>;
 type ChatTurn = { role: "user" | "assistant"; text: string; sources?: AssistantAnswer["sources"] };
+
+// Light, dependency-free formatting for the model's reply: bold text and
+// bullet lines render properly instead of showing raw markdown syntax. The
+// model is instructed never to emit a pipe table, but a stray table line is
+// defensively flattened into plain text rather than shown as raw "| a | b |".
+function renderInlineBold(text: string, keyPrefix: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) =>
+    part.startsWith("**") && part.endsWith("**") ? (
+      <strong key={`${keyPrefix}-${i}`}>{part.slice(2, -2)}</strong>
+    ) : (
+      <span key={`${keyPrefix}-${i}`}>{part}</span>
+    ),
+  );
+}
+
+function FormattedMessage({ text }: { text: string }) {
+  const lines = text.split("\n").filter((l) => !/^[\s|:-]+$/.test(l)); // drop table separator rows
+  const elements: ReactNode[] = [];
+  let bulletBuffer: string[] = [];
+
+  function flushBullets(key: string) {
+    if (bulletBuffer.length === 0) return;
+    elements.push(
+      <ul key={key} className="list-disc space-y-0.5 pl-4">
+        {bulletBuffer.map((b, i) => (
+          <li key={i}>{renderInlineBold(b, `${key}-${i}`)}</li>
+        ))}
+      </ul>,
+    );
+    bulletBuffer = [];
+  }
+
+  lines.forEach((line, i) => {
+    const bulletMatch = line.match(/^\s*[-*•]\s+(.*)$/);
+    if (bulletMatch) {
+      bulletBuffer.push(bulletMatch[1]);
+      return;
+    }
+    // A stray markdown table row — flatten cells into one plain bullet line.
+    if (line.includes("|")) {
+      const cells = line.split("|").map((c) => c.trim()).filter(Boolean);
+      if (cells.length > 1) {
+        bulletBuffer.push(cells.join(" — "));
+        return;
+      }
+    }
+    flushBullets(`ul-${i}`);
+    if (line.trim()) {
+      elements.push(
+        <p key={`p-${i}`} className="leading-relaxed">
+          {renderInlineBold(line, `p-${i}`)}
+        </p>,
+      );
+    }
+  });
+  flushBullets("ul-end");
+
+  return <div className="space-y-1.5">{elements}</div>;
+}
 
 const QUICK_QUESTIONS = [
   "My Donation History",
@@ -113,7 +173,11 @@ export function FundedAssistant() {
                     : "border border-border bg-card"
                 }`}
               >
-                <p className="whitespace-pre-wrap">{t.text}</p>
+                {t.role === "assistant" ? (
+                  <FormattedMessage text={t.text} />
+                ) : (
+                  <p className="whitespace-pre-wrap">{t.text}</p>
+                )}
                 {t.sources && t.sources.length > 0 && (
                   <div className="mt-2 space-y-0.5 border-t border-border/50 pt-2 text-[11px] text-muted-foreground">
                     {t.sources.slice(0, 4).map((s, si) => (

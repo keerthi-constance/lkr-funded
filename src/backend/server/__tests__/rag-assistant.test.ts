@@ -148,6 +148,21 @@ describe("RAG assistant — retrieval & authorization", () => {
     expect(donationFindFilter).toBeUndefined();
   });
 
+  it("answers a plain greeting with a friendly canned reply, without touching the DB or the refusal text", async () => {
+    const result = await buildRetrievalContext(sessionUser("donr1"), "hi");
+    expect(result.shortCircuit).toBeDefined();
+    expect(result.shortCircuit).not.toBe(OFFTOPIC_MESSAGE);
+    expect(result.shortCircuit).toMatch(/hi|hello/i);
+    expect(donationFindFilter).toBeUndefined();
+  });
+
+  it("answers thanks/goodbye with a canned reply too", async () => {
+    const thanks = await buildRetrievalContext(sessionUser("donr1"), "thank you!");
+    expect(thanks.shortCircuit).toMatch(/welcome/i);
+    const bye = await buildRetrievalContext(sessionUser("donr1"), "bye");
+    expect(bye.shortCircuit).toMatch(/goodbye/i);
+  });
+
   it("reports unavailable information for a donor with no matching records", async () => {
     const result = await buildRetrievalContext(sessionUser("donr3-no-donations"), "What is my donation history?");
     expect(result.contextText).toContain("none found");
