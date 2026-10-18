@@ -37,6 +37,7 @@ import { Route as DashboardStudentUpdatesRouteImport } from './routes/dashboard.
 import { Route as DashboardStudentSubmitRouteImport } from './routes/dashboard.student.submit'
 import { Route as DashboardStudentMilestonesRouteImport } from './routes/dashboard.student.milestones'
 import { Route as DashboardDonorWatchlistRouteImport } from './routes/dashboard.donor.watchlist'
+import { Route as DashboardDonorRecommendationsRouteImport } from './routes/dashboard.donor.recommendations'
 import { Route as DashboardDonorProfileRouteImport } from './routes/dashboard.donor.profile'
 import { Route as DashboardDonorDonationsRouteImport } from './routes/dashboard.donor.donations'
 import { Route as DashboardAdminSettingsRouteImport } from './routes/dashboard.admin.settings'
@@ -193,6 +194,12 @@ const DashboardDonorWatchlistRoute = DashboardDonorWatchlistRouteImport.update({
   path: '/watchlist',
   getParentRoute: () => DashboardDonorRoute,
 } as any)
+const DashboardDonorRecommendationsRoute =
+  DashboardDonorRecommendationsRouteImport.update({
+    id: '/recommendations',
+    path: '/recommendations',
+    getParentRoute: () => DashboardDonorRoute,
+  } as any)
 const DashboardDonorProfileRoute = DashboardDonorProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -265,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
   '/dashboard/donor/donations': typeof DashboardDonorDonationsRoute
   '/dashboard/donor/profile': typeof DashboardDonorProfileRoute
+  '/dashboard/donor/recommendations': typeof DashboardDonorRecommendationsRoute
   '/dashboard/donor/watchlist': typeof DashboardDonorWatchlistRoute
   '/dashboard/student/milestones': typeof DashboardStudentMilestonesRoute
   '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
@@ -300,6 +308,7 @@ export interface FileRoutesByTo {
   '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
   '/dashboard/donor/donations': typeof DashboardDonorDonationsRoute
   '/dashboard/donor/profile': typeof DashboardDonorProfileRoute
+  '/dashboard/donor/recommendations': typeof DashboardDonorRecommendationsRoute
   '/dashboard/donor/watchlist': typeof DashboardDonorWatchlistRoute
   '/dashboard/student/milestones': typeof DashboardStudentMilestonesRoute
   '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
@@ -340,6 +349,7 @@ export interface FileRoutesById {
   '/dashboard/admin/settings': typeof DashboardAdminSettingsRoute
   '/dashboard/donor/donations': typeof DashboardDonorDonationsRoute
   '/dashboard/donor/profile': typeof DashboardDonorProfileRoute
+  '/dashboard/donor/recommendations': typeof DashboardDonorRecommendationsRoute
   '/dashboard/donor/watchlist': typeof DashboardDonorWatchlistRoute
   '/dashboard/student/milestones': typeof DashboardStudentMilestonesRoute
   '/dashboard/student/submit': typeof DashboardStudentSubmitRoute
@@ -381,6 +391,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/settings'
     | '/dashboard/donor/donations'
     | '/dashboard/donor/profile'
+    | '/dashboard/donor/recommendations'
     | '/dashboard/donor/watchlist'
     | '/dashboard/student/milestones'
     | '/dashboard/student/submit'
@@ -416,6 +427,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/settings'
     | '/dashboard/donor/donations'
     | '/dashboard/donor/profile'
+    | '/dashboard/donor/recommendations'
     | '/dashboard/donor/watchlist'
     | '/dashboard/student/milestones'
     | '/dashboard/student/submit'
@@ -455,6 +467,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/settings'
     | '/dashboard/donor/donations'
     | '/dashboard/donor/profile'
+    | '/dashboard/donor/recommendations'
     | '/dashboard/donor/watchlist'
     | '/dashboard/student/milestones'
     | '/dashboard/student/submit'
@@ -683,6 +696,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardDonorWatchlistRouteImport
       parentRoute: typeof DashboardDonorRoute
     }
+    '/dashboard/donor/recommendations': {
+      id: '/dashboard/donor/recommendations'
+      path: '/recommendations'
+      fullPath: '/dashboard/donor/recommendations'
+      preLoaderRoute: typeof DashboardDonorRecommendationsRouteImport
+      parentRoute: typeof DashboardDonorRoute
+    }
     '/dashboard/donor/profile': {
       id: '/dashboard/donor/profile'
       path: '/profile'
@@ -776,6 +796,7 @@ const DashboardAdminRouteWithChildren = DashboardAdminRoute._addFileChildren(
 interface DashboardDonorRouteChildren {
   DashboardDonorDonationsRoute: typeof DashboardDonorDonationsRoute
   DashboardDonorProfileRoute: typeof DashboardDonorProfileRoute
+  DashboardDonorRecommendationsRoute: typeof DashboardDonorRecommendationsRoute
   DashboardDonorWatchlistRoute: typeof DashboardDonorWatchlistRoute
   DashboardDonorIndexRoute: typeof DashboardDonorIndexRoute
 }
@@ -783,6 +804,7 @@ interface DashboardDonorRouteChildren {
 const DashboardDonorRouteChildren: DashboardDonorRouteChildren = {
   DashboardDonorDonationsRoute: DashboardDonorDonationsRoute,
   DashboardDonorProfileRoute: DashboardDonorProfileRoute,
+  DashboardDonorRecommendationsRoute: DashboardDonorRecommendationsRoute,
   DashboardDonorWatchlistRoute: DashboardDonorWatchlistRoute,
   DashboardDonorIndexRoute: DashboardDonorIndexRoute,
 }

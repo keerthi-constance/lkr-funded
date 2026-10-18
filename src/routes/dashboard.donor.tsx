@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { getCurrentUser } from "@/backend/auth-functions";
+import { FundedAssistant } from "@/components/funded-assistant";
 
 export const Route = createFileRoute("/dashboard/donor")({
   beforeLoad: async () => {
@@ -9,5 +10,10 @@ export const Route = createFileRoute("/dashboard/donor")({
     }
     return { user };
   },
-  component: () => <Outlet />,
+  component: () => (
+    <>
+      <Outlet />
+      <FundedAssistant />
+    </>
+  ),
 });

@@ -141,6 +141,18 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   return session.data.user ?? null;
 }
 
+// Shared guard for server fns that must only run for a signed-in user of a
+// specific role (e.g. the AI recommendation/assistant endpoints, which are
+// investor-only). Throws rather than returning null/undefined so callers
+// can't accidentally proceed with an unauthenticated request.
+export async function requireRole(role: Role): Promise<SessionUser> {
+  const user = await getSessionUser();
+  if (!user || user.role !== role) {
+    throw new Error(`You must be signed in as a ${role} to do that.`);
+  }
+  return user;
+}
+
 // The session cookie holds a snapshot of the user taken at login/signup —
 // it doesn't automatically pick up later DB changes (e.g. a student linking
 // their first project). Call this right after such a change so the current

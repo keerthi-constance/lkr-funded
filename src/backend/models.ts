@@ -66,6 +66,13 @@ const ProjectSchema = new Schema(
 const DonationSchema = new Schema(
   {
     donor: { type: String, required: true },
+    // Set from the signed-in session at donation time (createPayhereCheckout
+    // / submitMockPayment), independent of the free-text `donor` display
+    // name above — donors can type any display name, so this is the only
+    // reliable link back to a real account. Unset for donations made while
+    // logged out (donating doesn't require an account). This is what scopes
+    // "my donations" queries for the AI recommendation/assistant features.
+    donorUsername: { type: String, index: true },
     project: { type: Schema.Types.ObjectId, ref: "Project", required: true },
     projectTitle: { type: String, required: true },
     projectSlug: { type: String, required: true },
@@ -116,6 +123,15 @@ const UserSchema = new Schema(
       bankName: { type: String },
       accountNumber: { type: String },
       branch: { type: String },
+    },
+    // Donor-only: feeds the AI project recommendation engine (see
+    // server/ai.ts). Harmless/unused on other roles.
+    preferences: {
+      categories: { type: [String], default: [] },
+      sectors: { type: [String], default: [] },
+      minAmount: { type: Number },
+      maxAmount: { type: Number },
+      keywords: { type: [String], default: [] },
     },
   },
   { timestamps: true },

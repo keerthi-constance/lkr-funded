@@ -4,7 +4,7 @@ import { z } from "zod";
 import { getDb } from "./db";
 import { ProjectModel, DonationModel, UniversityModel, UserModel } from "./models";
 import type { Project } from "@/lib/mock-data";
-import { getSessionUser, patchSessionUser } from "./server/auth";
+import { getSessionUser, patchSessionUser, requireRole } from "./server/auth";
 import { sendDisbursementInstructionEmail } from "./server/mailer";
 import { buildCheckoutFields, PAYHERE_CHECKOUT_URL, type CheckoutCustomer } from "./server/payhere";
 import {
@@ -22,6 +22,7 @@ import {
 export type DonationRecord = {
   id: string;
   donor: string;
+  donorUsername?: string;
   projectTitle: string;
   projectSlug: string;
   amount: number;
@@ -30,6 +31,8 @@ export type DonationRecord = {
   payhereOrderId: string;
   status: "pending" | "confirmed" | "failed";
   date: string;
+  ledgerTxId?: string;
+  ledgerAvailable?: boolean;
 };
 
 function serialize<T>(doc: T): T {
@@ -213,6 +216,23 @@ export const getRecentDonations = createServerFn({ method: "GET" }).handler(asyn
   return serialize(docs.map(withId)) as unknown as DonationRecord[];
 });
 
+// The signed-in donor's own donation history, across every status (pending/
+// confirmed/failed) — scoped by donorUsername, which is set from the
+// session at donation time (see createPayhereCheckout/submitMockPayment),
+// never from anything client-supplied. Powers the real donor dashboard
+// pages and is the only source the AI assistant is allowed to use for a
+// donor's own financial questions.
+export const getMyDonations = createServerFn({ method: "GET" }).handler(
+  async (): Promise<DonationRecord[]> => {
+    const user = await requireRole("donor");
+    await getDb();
+    const docs = await DonationModel.find({ donorUsername: user.username })
+      .sort({ date: -1 })
+      .lean();
+    return serialize(docs.map(withId)) as unknown as DonationRecord[];
+  },
+);
+
 const createPayhereCheckoutInput = z.object({
   slug: z.string(),
   amount: z.number().positive(),
@@ -243,6 +263,9 @@ export const createPayhereCheckout = createServerFn({ method: "POST" })
 
     const orderId = `fundEd_${randomUUID()}`;
     const donor = data.anonymous ? "Anonymous" : data.donor || "Anonymous";
+    const sessionUser = await getSessionUser();
+    const donorUsername =
+      sessionUser && sessionUser.role === "donor" ? sessionUser.username : undefined;
 
     // Build the checkout fields (throws on missing/invalid PayHere config)
     // before writing anything — otherwise a config error would leave behind
@@ -256,6 +279,7 @@ export const createPayhereCheckout = createServerFn({ method: "POST" })
 
     await DonationModel.create({
       donor,
+      donorUsername,
       project: project._id,
       projectTitle: project.title,
       projectSlug: project.slug,
@@ -297,9 +321,13 @@ export const submitMockPayment = createServerFn({ method: "POST" })
 
     const orderId = `mock_${randomUUID()}`;
     const donor = data.anonymous ? "Anonymous" : data.donor || "Anonymous";
+    const sessionUser = await getSessionUser();
+    const donorUsername =
+      sessionUser && sessionUser.role === "donor" ? sessionUser.username : undefined;
 
     const donation = await DonationModel.create({
       donor,
+      donorUsername,
       project: project._id,
       projectTitle: project.title,
       projectSlug: project.slug,

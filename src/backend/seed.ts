@@ -36,10 +36,15 @@ async function seed() {
   const slugToId = new Map(inserted.map((p) => [p.slug, p._id]));
 
   await DonationModel.deleteMany({});
-  const donationDocs = recentDonations.map((d) => {
+  const donationDocs = recentDonations.map((d, i) => {
     const project = projects[projects.findIndex((p) => p.title === d.project)] ?? projects[0];
     return {
       donor: d.donor,
+      // Link every 3rd seeded donation to one of the two demo donor accounts
+      // (donr1/donr2) so the AI recommendation/assistant features have real
+      // "my donations" data to work with out of the box — the rest stay
+      // unlinked, same as a real logged-out donation.
+      donorUsername: i % 3 === 0 ? (i % 6 === 0 ? "donr1" : "donr2") : undefined,
       project: slugToId.get(project.slug),
       projectTitle: project.title,
       projectSlug: project.slug,
