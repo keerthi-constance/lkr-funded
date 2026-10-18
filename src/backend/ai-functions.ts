@@ -62,8 +62,6 @@ export type RecommendedProject = {
   explanation: string;
 };
 
-const MAX_RECOMMENDATIONS = 6;
-
 // Recomputed on every request rather than cached — the project catalog in
 // this app is small, so this is cheap, and it means a changed preference or
 // a newly published project is reflected immediately (no stale cache to
@@ -84,14 +82,15 @@ export const getRecommendations = createServerFn({ method: "GET" }).handler(
     // only published, live, not-yet-fully-funded projects are recommendable.
     const eligible = projects.filter((p) => p.status === "live" && p.raised < p.goal);
 
+    // Every eligible project is shown, ranked highest-match first — a low
+    // score just means it sorts toward the bottom, not that it's excluded.
     const scored = eligible
       .map((p) => ({ project: p, score: scoreProject(p, preferences) }))
       .sort((a, b) => {
         if (b.score.score !== a.score.score) return b.score.score - a.score.score;
         // Deterministic tiebreak: favor projects closer to their goal.
         return b.project.raised / b.project.goal - a.project.raised / a.project.goal;
-      })
-      .slice(0, MAX_RECOMMENDATIONS);
+      });
 
     const results: RecommendedProject[] = await Promise.all(
       scored.map(async ({ project, score }) => ({

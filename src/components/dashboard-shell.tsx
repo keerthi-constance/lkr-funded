@@ -68,7 +68,6 @@ const navs: Record<string, { title: string; badge: string; items: NavItem[] }> =
       { to: "/dashboard/donor", label: "Impact", icon: Heart },
       { to: "/dashboard/donor/donations", label: "My Donations", icon: Coins },
       { to: "/dashboard/donor/recommendations", label: "For You", icon: Sparkles },
-      { to: "/dashboard/donor/watchlist", label: "Watchlist", icon: Bell },
       { to: "/dashboard/donor/profile", label: "Profile", icon: Settings },
     ],
   },

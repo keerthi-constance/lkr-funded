@@ -164,8 +164,7 @@ function RecommendationsPage() {
           </div>
         ) : recommendationsQuery.data.length === 0 ? (
           <div className="rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
-            No eligible projects match your preferences yet. Try widening your sectors, keywords, or
-            donation range above.
+            There are no live, fundable projects right now — check back soon.
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
